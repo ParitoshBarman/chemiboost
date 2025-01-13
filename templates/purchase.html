@@ -1,0 +1,516 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Screen</title>
+    <link rel="stylesheet" href='{% static "css/styles.css" %}'>
+    <link rel="stylesheet" href='{% static "css/purchase.css" %}'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .partysection h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .partysection .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--theamcolorlite);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .partysection table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .partysection table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        .partysection th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .partysection th {
+            background-color: var(--theamcolorlite);
+        }
+
+        .partysection button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .partysection .btn-add {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .partysection .btn-edit {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .partysection .btn-delete {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .partysection .btn-save {
+            background-color: #4CAF50;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .partysection .btn-cancel {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .partysection .form-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .partysection .form-container input,
+        .partysection .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .partysection .form-container label {
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .partysection {
+            padding: 100px 0;
+            width: 100vw;
+            min-height: 100vh;
+            background-color: rgb(26 34 44 / 88%);
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #partyTable>tbody>tr:hover{
+            background-color: rgb(82, 98, 117);
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        {% include "sidebar.html" %}
+        <div class="mainSec">
+            <div class="container">
+                <div class="header">
+                    <h1>Purchase Invoice</h1>
+                    <p><strong>Date:</strong> <input type="date" id="dateInput"></p>
+                </div>
+
+                <form>
+                    <div class="form-group">
+                        <label for="party">Party Name:</label>
+                        <input type="text" id="party" placeholder="Enter Party Name" onclick="showParty()">
+                    </div>
+                    <div class="form-group">
+                        <label for="partyPhone">Phone No:</label>
+                        <input type="text" id="partyPhone" placeholder="Enter Phone Number" onclick="showParty()">
+                        <input type="hidden" id="partyuniceID" name="partyuniceID" style="display: none;">
+                    </div>
+                </form>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SN</th>
+                            <th>Company</th>
+                            <th>Item Name</th>
+                            <th>Batch</th>
+                            <th>Exp. Date</th>
+                            <th>MRP</th>
+                            <th>Rate</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemTable">
+                        <!-- Rows will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <div class="footer">
+                    <button type="button" onclick="addRow()">Add Item</button>
+                    <button type="button" onclick="uploadData()">Save Invoice</button>
+                </div>
+                <div class="summary">
+                    <p><strong>Grand Total: ₹</strong><span id="grandTotal">0.00</span></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="partysection" id="partysection">
+        <h1>Party Management</h1>
+        <div class="container">
+            <button class="btn-add" onclick="toggleForm()">Add Party</button>
+
+            <div class="form-container" id="partyForm">
+                <h3 id="formTitle">Add Party</h3>
+                <label for="partyName">Party Name</label>
+                <input type="text" id="partyName" placeholder="Enter Party Name">
+                <label for="partyContact">Contact Number</label>
+                <input type="text" id="partyContact" placeholder="Enter Contact Number">
+                <label for="partyEmail">Email Address</label>
+                <input type="email" id="partyEmail" placeholder="Enter Email Address">
+                <label for="gst_number">GST Number</label>
+                <input type="text" id="gst_number" placeholder="Enter GST Number">
+                <label for="partyAddress">Address</label>
+                <input type="text" id="partyAddress" placeholder="Enter Address">
+                <div>
+                    <button class="btn-save" onclick="saveParty()">Save</button>
+                    <button class="btn-cancel" onclick="cancelForm()">Cancel</button>
+                </div>
+            </div>
+            <table id="partyTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Party Name</th>
+                        <th>Contact</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Party rows will be added dynamically -->
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        let rowCount = 1;
+
+        function addRow() {
+            const table = document.getElementById('itemTable');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${rowCount}</td>
+                <td><input type="text" placeholder="Company"></td>
+                <td><input type="text" placeholder="Item Name"></td>
+                <td><input type="text" placeholder="Batch"></td>
+                <td><input type="date"></td>
+                <td><input type="number" placeholder="MRP"></td>
+                <td><input type="number" placeholder="Rate"></td>
+                <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)"></td>
+                <td><input type="number" placeholder="Total" readonly></td>
+            `;
+
+            table.appendChild(row);
+            rowCount++;
+        }
+
+        function calculateTotal(input) {
+            const row = input.parentElement.parentElement;
+            const rate = row.querySelector('td:nth-child(7) input').value;
+            const qty = input.value;
+            const totalCell = row.querySelector('td:nth-child(9) input');
+
+            totalCell.value = (rate * qty).toFixed(2);
+            calculateGrandTotal();
+
+            function calculateGrandTotal() {
+                const rows = document.querySelectorAll('#itemTable tr');
+                grandTotal = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+                    grandTotal += total;
+                });
+
+                document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+            }
+        }
+
+
+        function uploadData() {
+            let allItems = [];
+
+            let itemTableRow = document.querySelectorAll("#itemTable>tr");
+            let singleItem = {};
+            itemTableRow.forEach((row)=>{
+                singleItem = {};
+                console.log(row.querySelectorAll("td")[1].querySelector("input").value)
+                singleItem.Company = row.querySelectorAll("td")[1].querySelector("input").value;
+                singleItem.ItemName = row.querySelectorAll("td")[2].querySelector("input").value;
+                singleItem.Batch = row.querySelectorAll("td")[3].querySelector("input").value;
+                singleItem.ExpDate = row.querySelectorAll("td")[4].querySelector("input").value;
+                singleItem.MRP = row.querySelectorAll("td")[5].querySelector("input").value;
+                singleItem.Rate = row.querySelectorAll("td")[6].querySelector("input").value;
+                singleItem.Qty = row.querySelectorAll("td")[7].querySelector("input").value;
+                singleItem.Total = row.querySelectorAll("td")[8].querySelector("input").value;
+
+                allItems.push(singleItem);
+
+            })
+
+            let dataObj = {};
+            dataObj.Supplier_name = document.getElementById("party").value;
+            dataObj.party_id = document.getElementById("partyuniceID").value;
+            dataObj.party_contact_number = document.getElementById("partyPhone").value;
+            dataObj.purchase_date = document.getElementById("dateInput").value;
+            dataObj.total_amount = document.getElementById("grandTotal").textContent;
+            dataObj.purchase_items = allItems
+
+            console.log(dataObj);
+        }
+
+        window.onload = function () {
+            const dateInput = document.getElementById('dateInput');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        };
+
+
+
+    </script>
+
+
+    <script>
+        let parties = "{{ parties }}";
+        let editIndex = -1;
+        let partyIdforEdit = 0;
+
+        const parser = new DOMParser();
+        const decodedData = parser.parseFromString(parties, "text/html").documentElement.textContent;
+        parties = JSON.parse(decodedData);
+
+        // Toggle the visibility of the form
+        function toggleForm() {
+            document.getElementById("partyForm").style.display = "block";
+            document.getElementById("formTitle").textContent = "Add Party";
+            resetForm();
+        }
+
+        // Save a new or edited party
+        async function saveParty() {
+            const name = document.getElementById("partyName").value;
+            const contact_number = document.getElementById("partyContact").value;
+            const email = document.getElementById("partyEmail").value;
+            const gst_number = document.getElementById("gst_number").value;
+            const address = document.getElementById("partyAddress").value;
+            if (editIndex === -1) {
+                try {
+                    const response = await fetch(`/addparty`, {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ name, contact_number, email, gst_number, address })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        parties.push({ fields: { name, contact_number, email, gst_number, address }, pk: result.party_id });
+                        alert(result.message);
+                    } else {
+                        console.error('Error adding party:', result);
+                        alert(result.error);
+                    }
+                } catch (error) {
+                    // localStorage.setItem("offlineAddParty",JSON.stringify())
+                    console.error('Request failed:', error);
+                }
+            }
+            else {
+                try {
+                    // Make the DELETE request
+                    const response = await fetch(`/editparty/${partyIdforEdit}`, {
+                        method: 'PUT',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body:JSON.stringify({ name, contact_number, email, gst_number, address })
+
+                    });
+
+                    // Parse the response
+                    const data = await response.json();
+
+                    // Check the status of the response
+                    if (response.ok) {
+                        console.log(data); // Success message
+                        console.log(data.message); // Success message
+                        console.log(data.party_id); // Success message
+
+                        parties[editIndex] = { fields: { name, contact_number, email, gst_number, address }, pk: data.party_id };
+
+                        editIndex = -1;
+                        partyIdforEdit = 0;
+                        alert('Party deleted successfully!');
+                    } else {
+                        console.error(data.error); // Error message
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (error) {
+                    console.error('An error occurred:', error);
+                    alert('An error occurred while deleting the party.');
+                }
+
+            }
+
+
+            await renderTable();
+            await cancelForm();
+        }
+
+        // Cancel the form
+        function cancelForm() {
+            document.getElementById("partyForm").style.display = "none";
+            resetForm();
+        }
+
+        // Reset form fields
+        function resetForm() {
+            document.getElementById("partyName").value = "";
+            document.getElementById("partyContact").value = "";
+            document.getElementById("partyEmail").value = "";
+            document.getElementById("gst_number").value = "";
+            document.getElementById("partyAddress").value = "";
+        }
+
+        // Render the table
+        function renderTable() {
+            const tableBody = document.getElementById("partyTable").querySelector("tbody");
+            tableBody.innerHTML = "";
+
+            parties.forEach((party, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                <td>${party.pk}</td>
+                <td>${party.fields.name}</td>
+                <td>${party.fields.contact_number}</td>
+                <td>${party.fields.email}</td>
+                <td>
+                    <button class="btn-edit" onclick="editParty(${party.pk})">Edit</button>
+                    <button class="btn-delete" onclick="deleteParty(${party.pk})">Delete</button>
+                </td>
+            `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Edit a party
+        function editParty(pkId) {
+            let index = parties.findIndex((party) => {
+                return party.pk == pkId;
+            })
+            const party = parties[index];
+            document.getElementById("partyName").value = party.fields.name;
+            document.getElementById("partyContact").value = party.fields.contact_number;
+            document.getElementById("partyEmail").value = party.fields.email;
+            document.getElementById("gst_number").value = party.fields.gst_number;
+            document.getElementById("partyAddress").value = party.fields.address;
+
+            document.getElementById("formTitle").textContent = "Edit Party";
+            document.getElementById("partyForm").style.display = "block";
+            editIndex = index;
+            partyIdforEdit = party.pk;
+        }
+
+        // Delete a party
+        async function deleteParty(pkId) {
+            if (confirm("Are you sure you want to delete this party?")) {
+                try {
+                    // Make the DELETE request
+                    const response = await fetch(`/deleteparty/${pkId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+
+                    });
+
+                    // Parse the response
+                    const data = await response.json();
+
+                    // Check the status of the response
+                    if (response.ok) {
+                        console.log(data.message); // Success message
+                        alert('Party deleted successfully!');
+                    } else {
+                        console.error(data.error); // Error message
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (error) {
+                    console.error('An error occurred:', error);
+                    alert('An error occurred while deleting the party.');
+                }
+
+                let index = parties.findIndex((party) => {
+                    return party.pk == pkId;
+                })
+                // console.log(index)
+                parties.splice(index, 1);
+                renderTable();
+            }
+        }
+
+        function showParty() {
+            let partysection = document.getElementById("partysection");
+            partysection.style.display = "flex";
+
+        }
+
+        window.addEventListener("mouseup", (e) => {
+            let partysection = document.getElementById("partysection");
+
+            if (e.target == partysection) {
+                partysection.style.display = "none";
+
+            }
+        })
+
+        renderTable()
+
+        let partyTableRow = document.querySelectorAll("#partyTable>tbody>tr");
+        partyTableRow.forEach((row)=>{
+            row.addEventListener("click", (e)=>{
+                console.log(e);
+                console.log(row.querySelectorAll("td")[0].textContent);
+                document.getElementById("partyuniceID").value = row.querySelectorAll("td")[0].textContent;
+                document.getElementById("party").value = row.querySelectorAll("td")[1].textContent;
+                document.getElementById("partyPhone").value = row.querySelectorAll("td")[2].textContent;
+                partysection.style.display = "none";
+            })
+        })
+    </script>
+
+</body>
+
+</html>

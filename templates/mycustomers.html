@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Customers</title>
+    <link rel="stylesheet" href='{% static "css/styles.css" %}'>
+    <link rel="stylesheet" href='{% static "css/purchase.css" %}'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-bar input {
+            width: 50%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--fontcolor);
+        }
+        #customerTable a{
+            color: white;
+            text-decoration: none;
+        }
+        #customerTable a:hover{
+            color: aqua;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        {% include "sidebar.html" %}
+        <div class="mainSec">
+            <div class="container">
+                <div class="header">
+                    <h1>My Customers</h1>
+                    <p>Total Customer: <span id="totalcustomer">200</span></p>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by Name, Phone, or Customer ID..."
+                        oninput="filterCustomers()">
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerTable">
+                        <!-- Data will be dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // Sample data (replace with backend data)
+        const customers = [
+            { id: 'C001', name: 'John Doe', phone: '9876543210', email: 'john@example.com' },
+            { id: 'C002', name: 'Jane Smith', phone: '9876543211', email: 'jane@example.com' },
+            { id: 'C003', name: 'Michael Brown', phone: '9876543212', email: 'michael@example.com' },
+            { id: 'C004', name: 'Emily Davis', phone: '9876543213', email: 'emily@example.com' },
+            { id: 'C005', name: 'Paul Johnson', phone: '9876543214', email: 'paul@example.com' }
+        ];
+
+        // Function to render customer data
+        function renderCustomers(filteredCustomers) {
+            const tableBody = document.getElementById('customerTable');
+            tableBody.innerHTML = '';
+
+            filteredCustomers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><a href="/customer/${customer.id}">${customer.id}</a></td>
+                    <td><a href="/customer/${customer.id}">${customer.name}</a></td>
+                    <td><a href="/customer/${customer.id}">${customer.phone}</a></td>
+                    <td><a href="/customer/${customer.id}">${customer.email}</a></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to filter customers by search input
+        function filterCustomers() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filteredCustomers = customers.filter(customer =>
+                customer.name.toLowerCase().includes(query) ||
+                customer.phone.includes(query) ||
+                customer.id.toLowerCase().includes(query)
+            );
+            renderCustomers(filteredCustomers);
+        }
+
+        // Render all customers on page load
+        renderCustomers(customers);
+    </script>
+</body>
+
+</html>

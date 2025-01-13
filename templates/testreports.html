@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Reports</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href='{% static "css/styles.css" %}'>
+    <link rel="stylesheet" href='{% static "css/purchase.css" %}'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        :root {
+            --theamcolor: rgb(26, 34, 44);
+            --theamcolorlite: rgb(36, 48, 63);
+            --fontcolor: rgb(255, 255, 255);
+            --cardbg: rgb(36, 48, 63);
+            --buttonbg: rgb(72, 181, 98);
+            --buttonhover: rgb(60, 150, 80);
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--theamcolor);
+            color: var(--fontcolor);
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: var(--cardbg);
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .card i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--buttonbg);
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .card p {
+            margin: 0 0 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .card button {
+            padding: 10px 20px;
+            background-color: var(--buttonbg);
+            color: var(--fontcolor);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card button:hover {
+            background-color: var(--buttonhover);
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        {% include "sidebar.html" %}
+        <div class="mainSec">
+            <div class="container">
+                <div class="header">
+                    <h1>Test Reports</h1>
+                </div>
+
+                <div class="card-container">
+                    <!-- Card 1 -->
+                    <div class="card">
+                        <i class="fas fa-vial"></i>
+                        <h2>Blood Test</h2>
+                        <p>A comprehensive analysis of your blood to assess overall health and detect potential
+                            conditions.</p>
+                        <button onclick="createReport('blood-test')">
+                            <i class="fas fa-plus"></i> Create Report
+                        </button>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="card">
+                        <i class="fas fa-heartbeat"></i>
+                        <h2>Heart Test</h2>
+                        <p>Detailed tests to evaluate your heart's health and detect any cardiovascular issues.</p>
+                        <button onclick="createReport('heart-test')">
+                            <i class="fas fa-plus"></i> Create Report
+                        </button>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="card">
+                        <i class="fas fa-syringe"></i>
+                        <h2>Diabetes Test</h2>
+                        <p>Essential testing for blood sugar levels to diagnose and monitor diabetes.</p>
+                        <button onclick="createReport('diabetes-test')">
+                            <i class="fas fa-plus"></i> Create Report
+                        </button>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="card">
+                        <i class="fas fa-dna"></i>
+                        <h2>Thyroid Test</h2>
+                        <p>Tests to check the functioning of your thyroid gland and detect related disorders.</p>
+                        <button onclick="createReport('thyroid-test')">
+                            <i class="fas fa-plus"></i> Create Report
+                        </button>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="card">
+                        <i class="fa fa-user-md"></i>
+                        <h2>Liver Function Test</h2>
+                        <p>Evaluates the functioning of your liver to ensure it is working effectively.</p>
+                        <button onclick="createReport('liver-function-test')">
+                            <i class="fas fa-plus"></i> Create Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // JavaScript function to handle creating reports
+        function createReport(testType) {
+            // Redirect to the report creation page (update the URL as needed)
+            window.location.href = `/create-report/${testType}`;
+        }
+    </script>
+</body>
+
+</html>

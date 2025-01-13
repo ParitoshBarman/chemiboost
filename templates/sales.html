@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Screen</title>
+    <link rel="stylesheet" href='{% static "css/styles.css" %}'>
+    <link rel="stylesheet" href='{% static "css/purchase.css" %}'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <main>
+        {% include "sidebar.html" %}
+        <div class="mainSec">
+            <div class="container">
+                <div class="header">
+                    <h1>Sales Invoice</h1>
+                    <p><strong>Date:</strong> <input type="date" id="dateInput"></p>
+                </div>
+
+                <!-- Form for Sales Details -->
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="customer">Customer Name:</label>
+                        <input type="text" id="customer" name="customer" placeholder="Enter Customer Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="invoice">Mobile No:</label>
+                        <input type="text" id="invoice" name="invoice" placeholder="Enter Mobile Number">
+                    </div>
+
+                    <!-- Sales Items Table -->
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>SN</th>
+                                    <th>Item Name</th>
+                                    <th>Batch</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Discount (%)</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTable">
+                                <!-- Rows will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer for Totals and Buttons -->
+                    <div class="footer">
+                        <button type="button" onclick="addRow()">Add Item</button>
+                        <button type="submit">Save Invoice</button>
+                    </div>
+                </form>
+
+                <!-- Summary Section -->
+                <div class="summary">
+                    <p><strong>Grand Total: ₹</strong><span id="grandTotal">0.00</span></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- JavaScript -->
+    <script>
+        let rowCount = 1;
+        let grandTotal = 0;
+
+        function addRow() {
+            const table = document.getElementById('salesTable');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${rowCount}</td>
+                <td><input type="text" name="item_name_${rowCount}" placeholder="Item Name"></td>
+                <td><input type="text" name="batch_${rowCount}" placeholder="Batch"></td>
+                <td><input type="number" name="quantity_${rowCount}" placeholder="Qty" onkeyup="updateTotal(this)"></td>
+                <td><input type="number" name="price_${rowCount}" placeholder="Price" onkeyup="updateTotal(this)"></td>
+                <td><input type="number" name="discount_${rowCount}" placeholder="Discount" onkeyup="updateTotal(this)"></td>
+                <td><input type="number" name="total_${rowCount}" placeholder="Total" readonly></td>
+            `;
+
+            table.appendChild(row);
+            rowCount++;
+        }
+
+        function updateTotal(input) {
+            const row = input.parentElement.parentElement;
+            const qty = parseFloat(row.querySelector('td:nth-child(4) input').value) || 0;
+            const price = parseFloat(row.querySelector('td:nth-child(5) input').value) || 0;
+            const discount = parseFloat(row.querySelector('td:nth-child(6) input').value) || 0;
+
+            const total = (qty * price * (1 - discount / 100)).toFixed(2);
+            row.querySelector('td:nth-child(7) input').value = total;
+
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            const rows = document.querySelectorAll('#salesTable tr');
+            grandTotal = 0;
+
+            rows.forEach(row => {
+                const total = parseFloat(row.querySelector('td:nth-child(7) input').value) || 0;
+                grandTotal += total;
+            });
+
+            document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+        }
+
+        window.onload = function () {
+            const dateInput = document.getElementById('dateInput');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        };
+    </script>
+</body>
+
+</html>

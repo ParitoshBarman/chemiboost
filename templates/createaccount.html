@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+    <style>
+        :root {
+            --theamcolor: rgb(26, 34, 44);
+            --theamcolorlite: rgb(36, 48, 63);
+            --fontcolor: rgb(255, 255, 255);
+            --buttonbg: rgb(72, 181, 98);
+            --buttonhover: rgb(60, 150, 80);
+            --inputbg: rgb(50, 60, 75);
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--theamcolor);
+            color: var(--fontcolor);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .create-account-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--theamcolorlite);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .create-account-container h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .create-account-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .create-account-container label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .create-account-container input {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--inputbg);
+            color: var(--fontcolor);
+        }
+
+        .create-account-container input:focus {
+            outline: 2px solid var(--buttonbg);
+        }
+
+        .create-account-container button {
+            padding: 10px;
+            background-color: var(--buttonbg);
+            color: var(--fontcolor);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .create-account-container button:hover {
+            background-color: var(--buttonhover);
+        }
+
+        .create-account-container .options {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .create-account-container .options a {
+            color: var(--buttonbg);
+            text-decoration: none;
+        }
+
+        .create-account-container .options a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="create-account-container">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}"
+                role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <h1>Create Account</h1>
+        <form id="createAccountForm" method="post" action="/createaccount">
+            {% csrf_token %}
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Create a password" required>
+
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirm_password" placeholder="Re-enter your password" required>
+
+            <button type="submit">Create Account</button>
+        </form>
+        <div class="options">
+            <p>Already have an account? <a href="/login">Login</a></p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,58 @@
+.quicktrackingsec {
+    padding: 50px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.quicktrackingsec>.quicktrackingcart {
+    width: 250px;
+    height: 150px;
+    /* border: 1px solid green; */
+
+}
+
+.quicktrackingsec>.quicktrackingcart>.totalsalse {
+    width: 250px;
+    height: 150px;
+    border-radius: 10px;
+}
+
+.quicktrackingsec>.quicktrackingcart>.contentbox {
+    /* transform: translate(102px, -121px); */
+    height: 100%;
+    position: relative;
+    top: -150px;
+    left: 0px;
+    /* border: 1px solid red; */
+    border: 1px solid #e5e7eb;
+    z-index: 5;
+    padding-left: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    border-radius: 10px;
+}
+
+.quicktrackingsec>.quicktrackingcart>.contentbox>div>h3 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.quicktrackingsec>.quicktrackingcart>.contentbox>div>p {
+    color: #AEB7C0;
+    font-size: 14px;
+    font-weight: 500;
+    padding-top: 2px;
+}
+
+.chartsection {
+    margin: 0 50px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}

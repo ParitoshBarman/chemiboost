@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements</title>
+    <style>
+        :root {
+            --theamcolor: rgb(26, 34, 44);
+            --theamcolorlite: rgb(36, 48, 63);
+            --fontcolor: rgb(255, 255, 255);
+            --buttonbg: rgb(72, 181, 98);
+            --buttonhover: rgb(60, 150, 80);
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--theamcolor);
+            color: var(--fontcolor);
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .form-container {
+            background-color: var(--theamcolorlite);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .form-container label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .form-container input,
+        .form-container textarea,
+        .form-container select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgb(50, 60, 75);
+            color: var(--fontcolor);
+        }
+
+        .form-container input:focus,
+        .form-container textarea:focus,
+        .form-container select:focus {
+            outline: 2px solid var(--buttonbg);
+        }
+
+        .form-container button {
+            padding: 10px 20px;
+            background-color: var(--buttonbg);
+            color: var(--fontcolor);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .form-container button:hover {
+            background-color: var(--buttonhover);
+        }
+
+        .announcements-list {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .announcement-item {
+            background-color: var(--theamcolorlite);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .announcement-text {
+            flex-grow: 1;
+        }
+
+        .send-button {
+            background-color: var(--buttonbg);
+            border: none;
+            color: var(--fontcolor);
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .send-button:hover {
+            background-color: var(--buttonhover);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Announcements</h1>
+        </div>
+
+        <!-- Announcement Form -->
+        <div class="form-container">
+            <form id="announcementForm">
+                <label for="announcementCategory">Select Category:</label>
+                <select id="announcementCategory" required>
+                    <option value="visiting-time">Visiting Time</option>
+                    <option value="new-doctor">New Doctor Announcement</option>
+                    <option value="festival-update">Festival Update</option>
+                    <option value="pending-payment">Pending Payment Reminder</option>
+                    <option value="overdue-payment">Overdue Payment Reminder</option>
+                    <option value="latest-offer">Latest Offer</option>
+                    <option value="new-medicine">New Medicine Announcement</option>
+                </select>
+
+                <label for="announcementMessage">Message:</label>
+                <textarea id="announcementMessage" rows="4" placeholder="Type your message here..." required></textarea>
+
+                <button type="submit">Send Announcement</button>
+            </form>
+        </div>
+
+        <!-- Announcements List -->
+        <div class="announcements-list">
+            <div class="announcement-item">
+                <div class="announcement-text">Latest Offer: Get 10% off on all heart tests this week!</div>
+                <button class="send-button" onclick="sendToWhatsApp('Get 10% off on all heart tests this week!')">Send</button>
+            </div>
+            <div class="announcement-item">
+                <div class="announcement-text">Reminder: Your payment for invoice #12345 is overdue. Please clear it at the earliest.</div>
+                <button class="send-button" onclick="sendToWhatsApp('Your payment for invoice #12345 is overdue. Please clear it at the earliest.')">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to handle form submission
+        document.getElementById("announcementForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const category = document.getElementById("announcementCategory").value;
+            const message = document.getElementById("announcementMessage").value;
+
+            // Send the announcement via WhatsApp
+            sendToWhatsApp(message);
+
+            // Clear the form
+            document.getElementById("announcementForm").reset();
+        });
+
+        // Function to simulate sending a message to WhatsApp
+        function sendToWhatsApp(message) {
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, "_blank");
+        }
+    </script>
+</body>
+
+</html>

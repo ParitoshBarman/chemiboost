@@ -25,18 +25,20 @@ SECRET_KEY = 'django-insecure-1^bb*w4ne&3a=8w(+t%zygxiq(kw&ya7^=d3=0a%x!9bg)in+e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'chemiboostapp.apps.ChemiboostappConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'chemiboost.urls'
@@ -54,7 +57,7 @@ ROOT_URLCONF = 'chemiboost.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -105,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -120,4 +123,15 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
+# Add menualy
+MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+#  Added menualy
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]

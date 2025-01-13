@@ -1,0 +1,29 @@
+{% load static %}
+<header>
+    <label for="filterInput">Show Data
+        <select name="filterInput" id="filterInput">
+            <option value="last24">Last 24 Hours</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="thisweek">This Week</option>
+            <option value="thismonth">This month</option>
+            <option value="thisyear">This Year</option>
+            <option value="lifetime">Life Time</option>
+        </select>
+    </label>
+
+    <div>
+        <p>Choose Range</p>
+        <div>
+            <label for="fromrngdate">From
+                <input type="date" name="fromrngdate" id="fromrngdate">
+            </label>
+            <label for="torngdate">To
+                <input type="date" name="torngdate" id="torngdate">
+            </label>
+        </div>
+    </div>
+    <div class="headerchildren">
+        <h2>JD Medical Dashboard</h2>
+    </div>
+</header>

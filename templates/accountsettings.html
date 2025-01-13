@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings</title>
+    <style>
+        :root {
+            --theamcolor: rgb(26, 34, 44);
+            --theamcolorlite: rgb(36, 48, 63);
+            --fontcolor: rgb(255, 255, 255);
+            --buttonbg: rgb(72, 181, 98);
+            --buttonhover: rgb(60, 150, 80);
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--theamcolor);
+            color: var(--fontcolor);
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .settings-section {
+            background-color: var(--theamcolorlite);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .settings-section h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .settings-section label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        .settings-section input,
+        .settings-section select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgb(50, 60, 75);
+            color: var(--fontcolor);
+        }
+
+        .settings-section input:focus,
+        .settings-section select:focus {
+            outline: 2px solid var(--buttonbg);
+        }
+
+        .settings-section button {
+            padding: 10px 20px;
+            background-color: var(--buttonbg);
+            color: var(--fontcolor);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .settings-section button:hover {
+            background-color: var(--buttonhover);
+        }
+
+        .notifications {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .notifications label {
+            margin: 0;
+        }
+
+        .notifications input[type="checkbox"] {
+            width: auto;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Account Settings</h1>
+
+        <!-- Profile Settings -->
+        <div class="settings-section">
+            <h2>Profile Information</h2>
+            <form id="profileForm">
+                <label for="fullName">Full Name:</label>
+                <input type="text" id="fullName" placeholder="Enter your full name" required>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone" placeholder="Enter your phone number">
+
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Password Settings -->
+        <div class="settings-section">
+            <h2>Change Password</h2>
+            <form id="passwordForm">
+                <label for="currentPassword">Current Password:</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password" required>
+
+                <label for="newPassword">New Password:</label>
+                <input type="password" id="newPassword" placeholder="Enter new password" required>
+
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
+
+                <button type="submit">Update Password</button>
+            </form>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="settings-section">
+            <h2>Notification Preferences</h2>
+            <form id="notificationForm">
+                <div class="notifications">
+                    <label for="whatsappNotifications">WhatsApp Notifications</label>
+                    <input type="checkbox" id="whatsappNotifications" checked>
+                </div>
+                <div class="notifications">
+                    <label for="emailNotifications">Email Notifications</label>
+                    <input type="checkbox" id="emailNotifications">
+                </div>
+                <div class="notifications">
+                    <label for="smsNotifications">SMS Notifications</label>
+                    <input type="checkbox" id="smsNotifications">
+                </div>
+
+                <button type="submit">Save Preferences</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

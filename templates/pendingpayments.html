@@ -1,0 +1,217 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Payments</title>
+    <link rel="stylesheet" href='{% static "css/styles.css" %}'>
+    <link rel="stylesheet" href='{% static "css/purchase.css" %}'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        :root {
+            --theamcolor: rgb(26, 34, 44);
+            --theamcolorlite: rgb(36, 48, 63);
+            --fontcolor: rgb(255, 255, 255);
+            --dangercolor: rgb(255, 77, 77);
+            --warningcolor: rgb(255, 165, 0);
+        }
+
+        .container {
+            margin: 20px;
+            padding: 20px;
+            background-color: var(--theamcolorlite);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            flex: 1;
+        }
+
+        .search-bar input {
+            width: 90%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--fontcolor);
+        }
+
+        .dropdown {
+            flex: 1;
+            text-align: right;
+        }
+
+        .dropdown select {
+            padding: 10px;
+            border-radius: 5px;
+            outline: none;
+            background-color: var(--theamcolor);
+            color: var(--fontcolor);
+            border: 1px solid var(--fontcolor);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table thead {
+            background-color: var(--theamcolorlite);
+        }
+
+        table th,
+        table td {
+            border: 1px solid var(--theamcolor);
+            padding: 10px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: var(--theamcolor);
+            color: var(--fontcolor);
+        }
+
+        table tr.overdue {
+            background-color: var(--dangercolor);
+            color: white;
+        }
+
+        table tr.pending {
+            background-color: var(--warningcolor);
+            color: var(--theamcolor);
+        }
+
+        table tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        {% include "sidebar.html" %}
+        <div class="mainSec">
+            <div class="container">
+                <div class="header">
+                    <h1>Pending Payments</h1>
+                </div>
+
+                <div class="filters">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search by Customer or Medicine..."
+                            oninput="filterPayments()">
+                    </div>
+                    <div class="dropdown">
+                        <select id="paymentFilter" onchange="applyFilter()">
+                            <option value="all">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SN</th>
+                            <th>Customer Name</th>
+                            <th>Medicine</th>
+                            <th>Amount Due</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentTable">
+                        <!-- Data will be dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Sample data (replace with backend data)
+        const payments = [
+            { sn: 1, customer: 'John Doe', medicine: 'Paracetamol', amount: 500, dueDate: '2023-12-05', status: 'Overdue' },
+            { sn: 2, customer: 'Jane Smith', medicine: 'Amoxicillin', amount: 1200, dueDate: '2023-12-15', status: 'Pending' },
+            { sn: 3, customer: 'Paul Johnson', medicine: 'Ibuprofen', amount: 800, dueDate: '2023-12-01', status: 'Overdue' },
+            { sn: 4, customer: 'Emily Davis', medicine: 'Vitamin C', amount: 300, dueDate: '2023-12-20', status: 'Pending' },
+        ];
+
+        const today = new Date();
+
+        // Function to render payment data
+        function renderPayments(filteredPayments) {
+            const tableBody = document.getElementById('paymentTable');
+            tableBody.innerHTML = '';
+
+            filteredPayments.forEach(pay => {
+                const row = document.createElement('tr');
+                row.className = pay.status.toLowerCase(); // Apply "pending" or "overdue" class
+                row.innerHTML = `
+                    <td>${pay.sn}</td>
+                    <td>${pay.customer}</td>
+                    <td>${pay.medicine}</td>
+                    <td>${pay.amount}</td>
+                    <td>${pay.dueDate}</td>
+                    <td>${pay.status}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to filter payments by search
+        function filterPayments() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filteredPayments = payments.filter(pay =>
+                pay.customer.toLowerCase().includes(query) ||
+                pay.medicine.toLowerCase().includes(query)
+            );
+            renderPayments(filteredPayments);
+        }
+
+        // Function to filter payments by status
+        function applyFilter() {
+            const filter = document.getElementById('paymentFilter').value;
+            let filteredPayments = [...payments];
+
+            if (filter === 'pending') {
+                filteredPayments = payments.filter(pay => pay.status === 'Pending');
+            } else if (filter === 'overdue') {
+                filteredPayments = payments.filter(pay => pay.status === 'Overdue');
+            }
+
+            renderPayments(filteredPayments);
+        }
+
+        // Render all payments on page load
+        renderPayments(payments);
+    </script>
+</body>
+
+</html>
