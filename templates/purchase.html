@@ -111,7 +111,7 @@
             align-items: center;
         }
 
-        #partyTable>tbody>tr:hover{
+        #partyTable>tbody>tr:hover {
             background-color: rgb(82, 98, 117);
         }
     </style>
@@ -262,7 +262,7 @@
 
             let itemTableRow = document.querySelectorAll("#itemTable>tr");
             let singleItem = {};
-            itemTableRow.forEach((row)=>{
+            itemTableRow.forEach((row) => {
                 singleItem = {};
                 console.log(row.querySelectorAll("td")[1].querySelector("input").value)
                 singleItem.Company = row.querySelectorAll("td")[1].querySelector("input").value;
@@ -337,6 +337,7 @@
 
                     if (response.ok) {
                         parties.push({ fields: { name, contact_number, email, gst_number, address }, pk: result.party_id });
+                        autoFillParty();
                         alert(result.message);
                     } else {
                         console.error('Error adding party:', result);
@@ -355,7 +356,7 @@
                         headers: {
                             "Content-Type": "application/json",
                         },
-                        body:JSON.stringify({ name, contact_number, email, gst_number, address })
+                        body: JSON.stringify({ name, contact_number, email, gst_number, address })
 
                     });
 
@@ -498,17 +499,22 @@
 
         renderTable()
 
-        let partyTableRow = document.querySelectorAll("#partyTable>tbody>tr");
-        partyTableRow.forEach((row)=>{
-            row.addEventListener("click", (e)=>{
-                console.log(e);
-                console.log(row.querySelectorAll("td")[0].textContent);
-                document.getElementById("partyuniceID").value = row.querySelectorAll("td")[0].textContent;
-                document.getElementById("party").value = row.querySelectorAll("td")[1].textContent;
-                document.getElementById("partyPhone").value = row.querySelectorAll("td")[2].textContent;
-                partysection.style.display = "none";
+        function autoFillParty() {
+            let partyTableRow = document.querySelectorAll("#partyTable>tbody>tr");
+            partyTableRow.forEach((row) => {
+                row.addEventListener("click", (e) => {
+                    // console.log(e);
+                    console.log(row.querySelectorAll("td")[0].textContent);
+                    document.getElementById("partyuniceID").value = row.querySelectorAll("td")[0].textContent;
+                    document.getElementById("party").value = row.querySelectorAll("td")[1].textContent;
+                    document.getElementById("partyPhone").value = row.querySelectorAll("td")[2].textContent;
+                    partysection.style.display = "none";
+                })
             })
-        })
+        }
+
+        autoFillParty();
+
     </script>
 
 </body>

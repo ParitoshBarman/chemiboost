@@ -1,3 +1,70 @@
 from django.db import models
+from django.core.serializers.json import DjangoJSONEncoder  # Encoder for JSON
 
 # Create your models here.
+class UserDetails(models.Model):
+    slID = models.AutoField(primary_key=True)
+    fullname = models.CharField(max_length=122)
+    companyName = models.CharField(max_length=122)
+    companyLogo = models.ImageField( upload_to="companyLogoes")
+    companylatitude = models.FloatField()
+    companylongitude = models.FloatField()
+    phone = models.CharField(max_length=20)
+    email = models.EmailField(max_length=254)
+    whatsapp = models.CharField(max_length=20)
+
+    # wpAccessToken
+    wp_access_token = models.TextField(verbose_name="WhatsApp Access Token")
+    # wpPhonenumberID
+    wp_phonenumber_id = models.CharField(max_length=50, verbose_name="WhatsApp Phone Number ID")
+    # WhatsAppBusinessAccountID
+    whatsapp_business_account_id = models.CharField(max_length=50, verbose_name="WhatsApp Business Account ID")
+    # wpmessageTransferNumber
+    wp_message_transfer_number = models.CharField(
+        max_length=15, verbose_name="Recipient Phone Number", help_text="In E.164 format, e.g., +1234567890"
+    )
+
+    your_webhook_token = models.CharField(max_length=50, verbose_name="Your Webhook Token")
+    
+    subscription = models.BooleanField(default=False)
+    next_subscription_expiry = models.DateField(verbose_name="Next Subscription Expiry Date")
+    
+    totalSpent = models.IntegerField(default=0)
+    totalPaymentReceived = models.IntegerField(null=True,blank=True,default=0)
+    last_update_date = models.DateField(auto_now=True)
+    last_update_time = models.TimeField(auto_now=True)
+    # joiningdate = models.DateField(auto_now_add=True)
+
+
+class Purchase(models.Model):
+    purchase_invoice_number = models.AutoField(primary_key=True)
+    ref_user = models.CharField(max_length=255)
+    Supplier_name = models.CharField(max_length=255)
+    Supplier_contact_number = models.CharField(max_length=15, blank=True, null=True)
+    Supplier_email = models.EmailField(blank=True, null=True)
+    Supplier_address = models.TextField(blank=True, null=True)
+    Supplier_gst = models.CharField(max_length=20, blank=True, null=True)
+
+    purchase_items = models.JSONField(encoder=DjangoJSONEncoder, default=list)  # JSONField for storing items
+
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    purchase_date = models.DateField()
+    last_update_date = models.DateField(auto_now=True)
+    last_update_time = models.TimeField(auto_now=True)
+    created_date = models.DateField(auto_now_add=True)
+    created_time = models.TimeField(auto_now_add=True)
+
+
+
+class Party(models.Model):
+    party_id = models.AutoField(primary_key=True)
+    ref_user = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name="Party Name")
+    contact_number = models.CharField(max_length=15, verbose_name="Contact Number")
+    email = models.EmailField(blank=True, null=True, verbose_name="Email Address")
+    gst_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="GST Number")
+    address = models.TextField(blank=True, null=True, verbose_name="Address")
+    totalExpence = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
