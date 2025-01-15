@@ -365,15 +365,11 @@
 
                     // Check the status of the response
                     if (response.ok) {
-                        console.log(data); // Success message
-                        console.log(data.message); // Success message
-                        console.log(data.party_id); // Success message
-
                         parties[editIndex] = { fields: { name, contact_number, email, gst_number, address }, pk: data.party_id };
 
                         editIndex = -1;
                         partyIdforEdit = 0;
-                        alert('Party deleted successfully!');
+                        alert('Party updated successfully!');
                     } else {
                         console.error(data.error); // Error message
                         alert(`Error: ${data.error}`);
@@ -502,14 +498,30 @@
         function autoFillParty() {
             let partyTableRow = document.querySelectorAll("#partyTable>tbody>tr");
             partyTableRow.forEach((row) => {
-                row.addEventListener("click", (e) => {
-                    // console.log(e);
-                    console.log(row.querySelectorAll("td")[0].textContent);
+                row.querySelectorAll("td")[0].addEventListener("click", (e) => {
                     document.getElementById("partyuniceID").value = row.querySelectorAll("td")[0].textContent;
                     document.getElementById("party").value = row.querySelectorAll("td")[1].textContent;
                     document.getElementById("partyPhone").value = row.querySelectorAll("td")[2].textContent;
                     partysection.style.display = "none";
-                })
+                });
+                row.querySelectorAll("td")[1].addEventListener("click", (e) => {
+                    document.getElementById("partyuniceID").value = row.querySelectorAll("td")[0].textContent;
+                    document.getElementById("party").value = row.querySelectorAll("td")[1].textContent;
+                    document.getElementById("partyPhone").value = row.querySelectorAll("td")[2].textContent;
+                    partysection.style.display = "none";
+                });
+                row.querySelectorAll("td")[2].addEventListener("click", (e) => {
+                    document.getElementById("partyuniceID").value = row.querySelectorAll("td")[0].textContent;
+                    document.getElementById("party").value = row.querySelectorAll("td")[1].textContent;
+                    document.getElementById("partyPhone").value = row.querySelectorAll("td")[2].textContent;
+                    partysection.style.display = "none";
+                });
+                row.querySelectorAll("td")[3].addEventListener("click", (e) => {
+                    document.getElementById("partyuniceID").value = row.querySelectorAll("td")[0].textContent;
+                    document.getElementById("party").value = row.querySelectorAll("td")[1].textContent;
+                    document.getElementById("partyPhone").value = row.querySelectorAll("td")[2].textContent;
+                    partysection.style.display = "none";
+                });
             })
         }
 

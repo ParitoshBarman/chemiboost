@@ -164,7 +164,7 @@ def edit_party(request, party_id):
             data = json.loads(request.body)
 
             # Fetch the Party instance
-            party = get_object_or_404(Party, pk=party_id, ref_user=request.user.username)
+            party = get_object_or_404(Party, pk=party_id, user_details=UserDetails.objects.get(user=User.objects.get(username=request.user.username)))
 
             # Update fields if present
             party.name = data.get('name', party.name)
@@ -190,7 +190,7 @@ def delete_party(request, party_id):
     """
     if request.method == 'DELETE' and request.user.is_authenticated:
         # Fetch the Party instance
-        party = get_object_or_404(Party, pk=party_id, ref_user=request.user.username)
+        party = get_object_or_404(Party, pk=party_id, user_details=UserDetails.objects.get(user=User.objects.get(username=request.user.username)))
 
         # Delete the party
         party.delete()
