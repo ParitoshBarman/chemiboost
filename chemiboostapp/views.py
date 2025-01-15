@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from chemiboostapp import whatsappcloud
 from django.contrib.auth.decorators import login_required
-from chemiboostapp.models import Party
+from chemiboostapp.models import Party, UserDetails
 from django.core import serializers
 
 mytoken = "hjhhkjhjhkjhjkghghjgjhghg"
@@ -16,7 +16,7 @@ mytoken = "hjhhkjhjhkjhjkghghjgjhghg"
 def index(request):
     return render(request, "index.html")
 def purchase(request):
-    PartyData = Party.objects.filter(ref_user=request.user.username)
+    PartyData = Party.objects.filter(user_details=UserDetails.objects.get(user=User.objects.get(username=request.user.username)))
     PartyData = serializers.serialize('json', PartyData)
     return render(request, "purchase.html", {"parties":PartyData})
 def sales(request):
@@ -58,6 +58,7 @@ def login_control(request):
 def createaccount(request):
     if request.method == 'POST':
         username = request.POST['phone']
+        name = request.POST['name']
         email = request.POST['email']
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
@@ -74,8 +75,10 @@ def createaccount(request):
             messages.error(request, "Email already registered")
             return redirect('createaccount')
 
-        user = User.objects.create_user(username=username, email=email, password=password)
+        user = User.objects.create_user(username=username, email=email, password=password, first_name=name.split(" ")[0], last_name=name.split(" ")[1])
         user.save()
+        user_details = UserDetails(user=user, fullname=name, phone=request.POST['phone'], email=email)
+        user_details.save()
         messages.success(request, "Account created successfully! Please login.")
         return redirect('login')
     return render(request, "createaccount.html")
@@ -128,9 +131,10 @@ def add_party(request):
             # Validate required fields
             if not name or not contact_number:
                 return JsonResponse({'error': 'Name and Contact Number are required.'}, status=400)
-
+            
             # Create a new Party object
             party = Party.objects.create(
+                user_details=UserDetails.objects.get(user=User.objects.get(username=request.user.username)),
                 name=name,
                 contact_number=contact_number,
                 email=email,

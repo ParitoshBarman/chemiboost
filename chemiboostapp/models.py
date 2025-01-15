@@ -1,14 +1,17 @@
 from django.db import models
+from django.contrib.auth.models import User
+from datetime import datetime, timedelta
 from django.core.serializers.json import DjangoJSONEncoder  # Encoder for JSON
 
 # Create your models here.
 class UserDetails(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="details")
     slID = models.AutoField(primary_key=True)
     fullname = models.CharField(max_length=122)
     companyName = models.CharField(max_length=122)
     companyLogo = models.ImageField( upload_to="companyLogoes")
-    companylatitude = models.FloatField()
-    companylongitude = models.FloatField()
+    companylatitude = models.FloatField(default=0)
+    companylongitude = models.FloatField(default=0)
     phone = models.CharField(max_length=20)
     email = models.EmailField(max_length=254)
     whatsapp = models.CharField(max_length=20)
@@ -27,7 +30,7 @@ class UserDetails(models.Model):
     your_webhook_token = models.CharField(max_length=50, verbose_name="Your Webhook Token")
     
     subscription = models.BooleanField(default=False)
-    next_subscription_expiry = models.DateField(verbose_name="Next Subscription Expiry Date")
+    next_subscription_expiry = models.DateField(verbose_name="Next Subscription Expiry Date", default=datetime.now()+timedelta(days=30))
     
     totalSpent = models.IntegerField(default=0)
     totalPaymentReceived = models.IntegerField(null=True,blank=True,default=0)
@@ -36,7 +39,23 @@ class UserDetails(models.Model):
     # joiningdate = models.DateField(auto_now_add=True)
 
 
+class Party(models.Model):
+    user_details = models.ForeignKey(UserDetails, on_delete=models.CASCADE, related_name='parties')
+    party_id = models.AutoField(primary_key=True)
+    ref_user = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name="Party Name")
+    contact_number = models.CharField(max_length=15, verbose_name="Contact Number")
+    email = models.EmailField(blank=True, null=True, verbose_name="Email Address")
+    gst_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="GST Number")
+    address = models.TextField(blank=True, null=True, verbose_name="Address")
+    totalExpence = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+
+
+
 class Purchase(models.Model):
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='purchases')
     purchase_invoice_number = models.AutoField(primary_key=True)
     ref_user = models.CharField(max_length=255)
     Supplier_name = models.CharField(max_length=255)
@@ -57,14 +76,14 @@ class Purchase(models.Model):
 
 
 
-class Party(models.Model):
-    party_id = models.AutoField(primary_key=True)
-    ref_user = models.CharField(max_length=255)
-    name = models.CharField(max_length=255, verbose_name="Party Name")
-    contact_number = models.CharField(max_length=15, verbose_name="Contact Number")
-    email = models.EmailField(blank=True, null=True, verbose_name="Email Address")
-    gst_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="GST Number")
-    address = models.TextField(blank=True, null=True, verbose_name="Address")
-    totalExpence = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+class PurchaseItem(models.Model):
+    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name='items')
+    company = models.CharField(max_length=255, verbose_name="Company")
+    item_name = models.CharField(max_length=255, verbose_name="Item Name")
+    batch = models.CharField(max_length=100, verbose_name="Batch")
+    exp_date = models.DateField(null=True, blank=True, verbose_name="Expiration Date")
+    mrp = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="MRP")
+    rate = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Rate")
+    qty = models.IntegerField(verbose_name="Quantity")
+    total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
