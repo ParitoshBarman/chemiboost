@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase History</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .pagination {
+            margin-top: 10px;
+        }
+
+        .pagination button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+    <!-- 💎 CSS Styling for Modal -->
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 60%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .invoice-header {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 4px solid #007bff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h2>Purchase History</h2>
+
+    <!-- 🔍 Filter Section -->
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate">
+    <label for="endDate">End Date:</label>
+    <input type="date" id="endDate">
+    <label for="supplier">Supplier:</label>
+    <input type="text" id="supplier">
+    <label for="contact">Contact:</label>
+    <input type="text" id="contact">
+    <button onclick="fetchPurchases(1)">Filter</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Contact</th>
+                <th>Purchase Date</th>
+                <th>Total Amount</th>
+                <th>Items</th>
+            </tr>
+        </thead>
+        <tbody id="purchaseTable">
+            <!-- Data will be inserted here -->
+        </tbody>
+    </table>
+
+    <!-- 📄 Pagination Controls -->
+    <div class="pagination">
+        <button id="prevPage" onclick="changePage(-1)" disabled>Previous</button>
+        <span id="pageInfo"></span>
+        <button id="nextPage" onclick="changePage(1)" disabled>Next</button>
+    </div>
+
+    <!-- 📦 Modal for Viewing Purchase Invoice -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Purchase Invoice</h2>
+
+            <!-- 🆔 Purchase Details -->
+            <div class="invoice-header">
+                <p><strong>Invoice ID:</strong> <span id="invoiceID"></span></p>
+                <p><strong>Supplier:</strong> <span id="supplierName"></span></p>
+                <p><strong>Contact:</strong> <span id="supplierContact"></span></p>
+                <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
+                <p><strong>Total Amount:</strong> ₹<span id="totalAmount"></span></p>
+            </div>
+
+            <!-- 📋 Purchase Items Table -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Item Name</th>
+                        <th>Batch</th>
+                        <th>Expiry Date</th>
+                        <th>MRP</th>
+                        <th>Rate</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="itemTable">
+                    <!-- Items will be dynamically inserted here -->
+                </tbody>
+            </table>
+
+            <br>
+
+            <!-- 📄 Download & Print Buttons -->
+            <div class="invoice-buttons">
+                <button onclick="printInvoice()">🖨 Print Invoice</button>
+                <button onclick="downloadInvoicePDF()">📥 Download PDF</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+
+        function fetchPurchases(page = 1) {
+            let startDate = document.getElementById("startDate").value;
+            let endDate = document.getElementById("endDate").value;
+            let supplier = document.getElementById("supplier").value;
+            let contact = document.getElementById("contact").value;
+
+            let url = `/get_purchases/?page=${page}`;
+            if (startDate && endDate) url += `&start_date=${startDate}&end_date=${endDate}`;
+            if (supplier) url += `&supplier=${encodeURIComponent(supplier)}`;
+            if (contact) url += `&contact=${encodeURIComponent(contact)}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    displayPurchases(data.purchases);
+                    currentPage = data.current_page;
+                    totalPages = data.total_pages;
+                    updatePagination();
+                })
+                .catch(error => console.error("Error fetching purchases:", error));
+        }
+
+        function displayPurchases(purchases) {
+            let tableBody = document.getElementById("purchaseTable");
+            tableBody.innerHTML = "";
+
+            purchases.forEach(purchase => {
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${purchase.id}</td>
+                    <td>${purchase.Supplier_name}</td>
+                    <td>${purchase.Supplier_contact_number}</td>
+                    <td>${purchase.purchase_date}</td>
+                    <td>${purchase.total_amount}</td>
+                    <td>
+                        <button onclick="showItems(${purchase.id})">View Items</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showItems(purchaseId) {
+            fetch(`/get_purchase_items/${purchaseId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let purchase = data.purchase;
+
+                    // 📝 Fill in purchase details
+                    document.getElementById("invoiceID").textContent = purchase.purchase_invoice_number;
+                    document.getElementById("supplierName").textContent = purchase.Supplier_name;
+                    document.getElementById("supplierContact").textContent = purchase.Supplier_contact_number || "N/A";
+                    document.getElementById("purchaseDate").textContent = purchase.purchase_date;
+                    document.getElementById("totalAmount").textContent = purchase.total_amount;
+
+                    let itemTable = document.getElementById("itemTable");
+                    itemTable.innerHTML = "";
+
+                    data.purchase.items.forEach(item => {
+                        let row = document.createElement("tr");
+                        row.innerHTML = `
+                        <td>${item.company}</td>
+                        <td>${item.item_name}</td>
+                        <td>${item.batch}</td>
+                        <td>${item.exp_date}</td>
+                        <td>${item.mrp}</td>
+                        <td>${item.rate}</td>
+                        <td>${item.qty}</td>
+                        <td>${item.total}</td>
+                    `;
+                        itemTable.appendChild(row);
+                    });
+
+                    document.getElementById("itemModal").style.display = "block";
+                })
+                .catch(error => console.error("Error fetching purchase items:", error));
+        }
+
+        function closeModal() {
+            document.getElementById("itemModal").style.display = "none";
+        }
+
+        function changePage(offset) {
+            if ((currentPage + offset) >= 1 && (currentPage + offset) <= totalPages) {
+                fetchPurchases(currentPage + offset);
+            }
+        }
+
+        function updatePagination() {
+            document.getElementById("prevPage").disabled = currentPage === 1;
+            document.getElementById("nextPage").disabled = currentPage === totalPages;
+            document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${totalPages}`;
+        }
+
+        // Load first page on page load
+        fetchPurchases();
+
+
+        function printInvoice() {
+            let modalContent = document.querySelector(".modal-content").innerHTML;
+            let newWindow = window.open("", "", "width=800,height=600");
+            newWindow.document.write("<html><head><title>Print Invoice</title>");
+            newWindow.document.write("<style>");
+            newWindow.document.write("body { font-family: Arial, sans-serif; padding: 20px; }");
+            newWindow.document.write("table { width: 100%; border-collapse: collapse; margin-top: 10px; }");
+            newWindow.document.write("th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }");
+            newWindow.document.write("th { background-color: #007bff; color: white; }");
+            newWindow.document.write("</style>");
+            newWindow.document.write("</head><body>");
+            newWindow.document.write(modalContent);
+            newWindow.document.write("</body></html>");
+            newWindow.document.close();
+            newWindow.print();
+        }
+
+        function downloadInvoicePDF() {
+            let element = document.querySelector(".modal-content");
+            html2pdf().from(element).save("Purchase_Invoice.pdf");
+        }
+
+        // Include html2pdf.js for PDF Download
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js";
+        script.onload = () => console.log("html2pdf.js loaded!");
+        document.body.appendChild(script);
+
+    </script>
+</body>
+
+</html>

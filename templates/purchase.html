@@ -257,7 +257,7 @@
         }
 
 
-        function uploadData() {
+        async function uploadData() {
             let allItems = [];
 
             let itemTableRow = document.querySelectorAll("#itemTable>tr");
@@ -287,6 +287,28 @@
             dataObj.purchase_items = allItems
 
             console.log(dataObj);
+            try {
+                    const response = await fetch(`/create_purchase`, {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(dataObj)
+                    });
+
+                    const result = await response.json();
+                    console.log(result);
+
+                    if (response.ok) {
+                        alert(result.message);
+                    } else {
+                        console.error('Error adding create_purchase:', result);
+                        alert(result.error);
+                    }
+                } catch (error) {
+                    // localStorage.setItem("offlineAddParty",JSON.stringify())
+                    console.error('Request failed:', error);
+                }
         }
 
         window.onload = function () {
