@@ -91,6 +91,7 @@
             padding: 10px;
             background: #f9f9f9;
             border-left: 4px solid #007bff;
+            color: black;
         }
 
         table {
@@ -115,6 +116,11 @@
             float: right;
             font-size: 24px;
             cursor: pointer;
+            color: black;
+        }
+
+        #itemTable td {
+            color: black;
         }
     </style>
 
@@ -285,6 +291,18 @@
                     `;
                         itemTable.appendChild(row);
                     });
+
+                    let rowLast = document.createElement("tr");
+                    rowLast.innerHTML = `<td style="border: none;"></td>
+    <td style="border: none;"></td>
+    <td style="border: none;"></td>
+    <td style="border: none;"></td>
+    <td style="border: none;"></td>
+    <td style="border: none;"></td>
+    <td style="border-top: 2px solid black; font-weight: bold;text-align:right;">Grand Total:</td>
+    <td style="border-top: 2px solid black; font-weight: bold;text-align:left;">${purchase.total_amount}</td>`;
+                    itemTable.appendChild(rowLast);
+
 
                     document.getElementById("itemModal").style.display = "block";
                 })

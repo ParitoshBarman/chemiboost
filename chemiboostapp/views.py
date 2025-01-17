@@ -278,7 +278,16 @@ def create_purchase(request):
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
-    
+@csrf_exempt
+def delete_purchase(request, purchase_id):
+    if request.method == "DELETE":
+        try:
+            purchase = Purchase.objects.get(id=purchase_id)
+            purchase.delete()
+            return JsonResponse({"success": True, "message": "Purchase deleted successfully!"})
+        except Purchase.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Purchase not found!"}, status=404)
+    return JsonResponse({"success": False, "message": "Invalid request!"}, status=400)
 
 @csrf_exempt  # Use this only if your frontend is not sending CSRF tokens (not recommended for production).
 # @login_required  # Ensure the user is authenticated.
