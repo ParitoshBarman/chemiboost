@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,6 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase History</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href='{% static "css/styles.css" %}'>
+    <link rel="stylesheet" href='{% static "css/purchase.css" %}'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         table {
             width: 100%;
@@ -36,12 +40,12 @@
         /* Modal Styles */
         .modal {
             display: none;
-            position: fixed;
+            position: absolute;
             z-index: 1;
             left: 0;
             top: 0;
             width: 100%;
-            height: 100%;
+            min-height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
         }
 
@@ -64,12 +68,12 @@
     <style>
         .modal {
             display: none;
-            position: fixed;
+            position: absolute;
             z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
-            height: 100%;
+            min-height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
         }
 
@@ -117,86 +121,93 @@
 </head>
 
 <body>
-    <h2>Purchase History</h2>
+    <main>
+        {% include "sidebar.html" %}
+        <div class="mainSec">
+            <div class="container">
+                <h2>Purchase History</h2>
 
-    <!-- 🔍 Filter Section -->
-    <label for="startDate">Start Date:</label>
-    <input type="date" id="startDate">
-    <label for="endDate">End Date:</label>
-    <input type="date" id="endDate">
-    <label for="supplier">Supplier:</label>
-    <input type="text" id="supplier">
-    <label for="contact">Contact:</label>
-    <input type="text" id="contact">
-    <button onclick="fetchPurchases(1)">Filter</button>
+                <!-- 🔍 Filter Section -->
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate">
+                <label for="supplier">Supplier:</label>
+                <input type="text" id="supplier">
+                <label for="contact">Contact:</label>
+                <input type="text" id="contact">
+                <button onclick="fetchPurchases(1)">Filter</button>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Supplier</th>
-                <th>Contact</th>
-                <th>Purchase Date</th>
-                <th>Total Amount</th>
-                <th>Items</th>
-            </tr>
-        </thead>
-        <tbody id="purchaseTable">
-            <!-- Data will be inserted here -->
-        </tbody>
-    </table>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Supplier</th>
+                            <th>Contact</th>
+                            <th>Purchase Date</th>
+                            <th>Total Amount</th>
+                            <th>Items</th>
+                        </tr>
+                    </thead>
+                    <tbody id="purchaseTable">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
 
-    <!-- 📄 Pagination Controls -->
-    <div class="pagination">
-        <button id="prevPage" onclick="changePage(-1)" disabled>Previous</button>
-        <span id="pageInfo"></span>
-        <button id="nextPage" onclick="changePage(1)" disabled>Next</button>
-    </div>
+                <!-- 📄 Pagination Controls -->
+                <div class="pagination">
+                    <button id="prevPage" onclick="changePage(-1)" disabled>Previous</button>
+                    <span id="pageInfo"></span>
+                    <button id="nextPage" onclick="changePage(1)" disabled>Next</button>
+                </div>
 
-    <!-- 📦 Modal for Viewing Purchase Invoice -->
-    <div id="itemModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Purchase Invoice</h2>
+                <!-- 📦 Modal for Viewing Purchase Invoice -->
+                <div id="itemModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeModal()">&times;</span>
+                        <h2>Purchase Invoice</h2>
 
-            <!-- 🆔 Purchase Details -->
-            <div class="invoice-header">
-                <p><strong>Invoice ID:</strong> <span id="invoiceID"></span></p>
-                <p><strong>Supplier:</strong> <span id="supplierName"></span></p>
-                <p><strong>Contact:</strong> <span id="supplierContact"></span></p>
-                <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
-                <p><strong>Total Amount:</strong> ₹<span id="totalAmount"></span></p>
+                        <!-- 🆔 Purchase Details -->
+                        <div class="invoice-header">
+                            <p><strong>Invoice ID:</strong> <span id="invoiceID"></span></p>
+                            <p><strong>Supplier:</strong> <span id="supplierName"></span></p>
+                            <p><strong>Contact:</strong> <span id="supplierContact"></span></p>
+                            <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
+                            <p><strong>Total Amount:</strong> ₹<span id="totalAmount"></span></p>
+                        </div>
+
+                        <!-- 📋 Purchase Items Table -->
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Item Name</th>
+                                    <th>Batch</th>
+                                    <th>Expiry Date</th>
+                                    <th>MRP</th>
+                                    <th>Rate</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemTable">
+                                <!-- Items will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+
+                        <br>
+
+                        <!-- 📄 Download & Print Buttons -->
+                        <div class="invoice-buttons">
+                            <button onclick="printInvoice()">🖨 Print Invoice</button>
+                            <button onclick="downloadInvoicePDF()">📥 Download PDF</button>
+                        </div>
+
+                    </div>
+                </div>
             </div>
-
-            <!-- 📋 Purchase Items Table -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>Company</th>
-                        <th>Item Name</th>
-                        <th>Batch</th>
-                        <th>Expiry Date</th>
-                        <th>MRP</th>
-                        <th>Rate</th>
-                        <th>Qty</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody id="itemTable">
-                    <!-- Items will be dynamically inserted here -->
-                </tbody>
-            </table>
-
-            <br>
-
-            <!-- 📄 Download & Print Buttons -->
-            <div class="invoice-buttons">
-                <button onclick="printInvoice()">🖨 Print Invoice</button>
-                <button onclick="downloadInvoicePDF()">📥 Download PDF</button>
-            </div>
-
         </div>
-    </div>
+    </main>
 
     <script>
         let currentPage = 1;
