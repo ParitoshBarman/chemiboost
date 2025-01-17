@@ -122,6 +122,28 @@
         #itemTable td {
             color: black;
         }
+
+        .tbl-btn {
+            padding: 4px 6px;
+            cursor: pointer;
+            border-radius: 13px;
+        }
+
+        .delete-btn {
+            background-color: red;
+            color: white;
+        }
+
+        .filtersec{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            gap: 8px;
+        }
+        .filtersec>div{
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 
 </head>
@@ -134,16 +156,25 @@
                 <h2>Purchase History</h2>
 
                 <!-- 🔍 Filter Section -->
-                <label for="startDate">Start Date:</label>
-                <input type="date" id="startDate">
-                <label for="endDate">End Date:</label>
-                <input type="date" id="endDate">
-                <label for="supplier">Supplier:</label>
-                <input type="text" id="supplier">
-                <label for="contact">Contact:</label>
-                <input type="text" id="contact">
-                <button onclick="fetchPurchases(1)">Filter</button>
-
+                <div class="filtersec">
+                    <div>
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div><label for="endDate">End Date:</label>
+                        <input type="date" id="endDate">
+                    </div>
+                    <div><label for="supplier">Supplier:</label>
+                        <input type="text" id="supplier" placeholder="Search by Supplier Name">
+                    </div>
+                    <div><label for="contact">Contact:</label>
+                        <input type="text" id="contact" placeholder="Search by Contact">
+                    </div>
+                    <div>
+                        <button onclick="fetchPurchases(1)"
+                            style="border-radius: 5px;padding: 4px 7px;cursor: pointer;">Search</button>
+                    </div>
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -153,6 +184,7 @@
                             <th>Purchase Date</th>
                             <th>Total Amount</th>
                             <th>Items</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="purchaseTable">
@@ -254,7 +286,10 @@
                     <td>${purchase.purchase_date}</td>
                     <td>${purchase.total_amount}</td>
                     <td>
-                        <button onclick="showItems(${purchase.id})">View Items</button>
+                        <button class="tbl-btn" onclick="showItems(${purchase.id})">View Items</button>
+                    </td>
+                    <td>
+                        <button class="delete-btn tbl-btn" onclick="deletePurchase(${purchase.id})">🗑 Delete</button>
                     </td>
                 `;
                 tableBody.appendChild(row);

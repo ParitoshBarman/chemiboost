@@ -78,6 +78,7 @@ class Purchase(models.Model):
 
 class PurchaseItem(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name='items')
+    PurchaseItemID = models.AutoField(primary_key=True)
     company = models.CharField(max_length=255, verbose_name="Company")
     item_name = models.CharField(max_length=255, verbose_name="Item Name")
     batch = models.CharField(max_length=100, verbose_name="Batch")
