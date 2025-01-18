@@ -280,9 +280,9 @@ def create_purchase(request):
 
 @csrf_exempt
 def delete_purchase(request, purchase_id):
-    if request.method == "DELETE":
+    if request.method == "DELETE" and request.user.is_authenticated:
         try:
-            purchase = Purchase.objects.get(id=purchase_id)
+            purchase = Purchase.objects.get(purchase_invoice_number=purchase_id)
             purchase.delete()
             return JsonResponse({"success": True, "message": "Purchase deleted successfully!"})
         except Purchase.DoesNotExist:

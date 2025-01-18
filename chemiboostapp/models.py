@@ -55,7 +55,7 @@ class Party(models.Model):
 
 
 class Purchase(models.Model):
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name='purchases')
+    party = models.ForeignKey(Party, on_delete=models.DO_NOTHING, related_name='purchases')
     purchase_invoice_number = models.AutoField(primary_key=True)
     ref_user = models.CharField(max_length=255)
     Supplier_name = models.CharField(max_length=255)
