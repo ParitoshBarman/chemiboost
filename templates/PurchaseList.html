@@ -146,14 +146,52 @@
             flex-direction: column;
         }
 
-        #edititemTable>tr :nth-child(6) input, #edititemTable>tr :nth-child(7) input, #edititemTable>tr :nth-child(8) input, #edititemTable>tr :nth-child(9) input{
-    width: 60px;
-    /* background-color: red; */
-}
-#edititemTable>tr :nth-child(4) input{
-    width: 100px;
-}
+        #edititemTable>tr :nth-child(6) input,
+        #edititemTable>tr :nth-child(7) input,
+        #edititemTable>tr :nth-child(8) input,
+        #edititemTable>tr :nth-child(9) input {
+            width: 60px;
+            /* background-color: red; */
+        }
 
+        #edititemTable>tr :nth-child(4) input {
+            width: 90px;
+        }
+
+        #edititemTable>tr :nth-child(2) input,
+        #edititemTable>tr :nth-child(3) input {
+            width: 100px;
+        }
+
+        /* #edititemTable{
+            overflow: scroll;
+        } */
+        #editInvoiceModal>div {
+            overflow-x: scroll;
+            
+        }
+        #editInvoiceModal>div::-webkit-scrollbar{
+            width: 0;
+            height: 0;
+        }
+
+
+        /* Track */
+        #editInvoiceModal>div::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        /* Handle */
+        #editInvoiceModal>div::-webkit-scrollbar-thumb {
+            background: rgba(255, 0, 0, 0.574);
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Handle on hover */
+        #editInvoiceModal>div::-webkit-scrollbar-thumb:hover {
+            background: red;
+        }
     </style>
 
 </head>
@@ -298,7 +336,7 @@
 
                         <div class="footer">
                             <button type="button" onclick="addRow()">Add Item</button>
-                            <button type="button" onclick="uploadData()">Save Invoice</button>
+                            <button type="button" id="editpurchase_invoice_number" onclick="uploadEditData()">Save Invoice</button>
                         </div>
                         <div class="summary">
                             <p><strong>Grand Total: ₹</strong><span id="grandTotal">0.00</span></p>
@@ -486,21 +524,21 @@
             fetch(`/get_purchase_items/${purchaseId}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data)
                     editingInvoiceId = purchaseId;
 
                     document.getElementById("party").value = data.purchase.Supplier_name;
                     document.getElementById("partyPhone").value = data.purchase.Supplier_contact_number;
                     document.getElementById("dateInput").value = data.purchase.purchase_date;
                     document.getElementById("grandTotal").textContent = data.purchase.total_amount;
+                    document.getElementById("editpurchase_invoice_number").setAttribute("data-purchase_invoice_number", data.purchase.purchase_invoice_number);
 
                     const table = document.getElementById('edititemTable');
                     table.innerHTML = "";
-                    
+
                     data.purchase.items.forEach((itm, indx) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                <td>${indx+1}</td>
+                <td>${indx + 1}</td>
                 <td><input type="text" value="${itm.company}" placeholder="Company"></td>
                 <td><input type="text" value="${itm.item_name}" placeholder="Item Name"></td>
                 <td><input type="text" value="${itm.batch}" placeholder="Batch"></td>
@@ -520,28 +558,7 @@
                 .catch(error => console.error("Error fetching invoice data:", error));
         }
 
-        // Save Edited Invoice Data
-        function saveInvoiceChanges() {
-            let updatedData = {
-                supplier: document.getElementById("editSupplier").value,
-                contact: document.getElementById("editContact").value,
-                purchase_date: document.getElementById("editPurchaseDate").value,
-                total_amount: document.getElementById("editTotalAmount").value,
-            };
-
-            fetch(`/update_purchase/${editingInvoiceId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedData),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert("Invoice updated successfully!");
-                    closeEditModal();
-                    fetchPurchases(currentPage); // Refresh table
-                })
-                .catch(error => console.error("Error updating invoice:", error));
-        }
+        
 
         // Close Edit Modal
         function closeEditModal() {
@@ -550,6 +567,116 @@
 
 
     </script>
+
+<script>
+    
+    function addRow() {
+        let rowCount = document.getElementById('edititemTable').childElementCount;
+        const table = document.getElementById('edititemTable');
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${rowCount+1}</td>
+            <td><input type="text" placeholder="Company"></td>
+            <td><input type="text" placeholder="Item Name"></td>
+            <td><input type="text" placeholder="Batch"></td>
+            <td><input type="date"></td>
+            <td><input type="number" placeholder="MRP"></td>
+            <td><input type="number" placeholder="Rate"></td>
+            <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)"></td>
+            <td><input type="number" placeholder="Total" readonly></td>
+        `;
+
+        table.appendChild(row);
+        rowCount++;
+    }
+
+    function calculateTotal(input) {
+        const row = input.parentElement.parentElement;
+        const rate = row.querySelector('td:nth-child(7) input').value;
+        const qty = input.value;
+        const totalCell = row.querySelector('td:nth-child(9) input');
+
+        totalCell.value = (rate * qty).toFixed(2);
+        calculateGrandTotal();
+
+        function calculateGrandTotal() {
+            const rows = document.querySelectorAll('#edititemTable tr');
+            grandTotal = 0;
+
+            rows.forEach(row => {
+                const total = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+                grandTotal += total;
+            });
+
+            document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+        }
+    }
+
+    async function uploadEditData() {
+            let allItems = [];
+
+            let itemTableRow = document.querySelectorAll("#edititemTable>tr");
+            let singleItem = {};
+            itemTableRow.forEach((row) => {
+                singleItem = {};
+                singleItem.Company = row.querySelectorAll("td")[1].querySelector("input").value;
+                singleItem.ItemName = row.querySelectorAll("td")[2].querySelector("input").value;
+                singleItem.Batch = row.querySelectorAll("td")[3].querySelector("input").value;
+                singleItem.ExpDate = row.querySelectorAll("td")[4].querySelector("input").value;
+                singleItem.MRP = row.querySelectorAll("td")[5].querySelector("input").value;
+                singleItem.Rate = row.querySelectorAll("td")[6].querySelector("input").value;
+                singleItem.Qty = row.querySelectorAll("td")[7].querySelector("input").value;
+                singleItem.Total = row.querySelectorAll("td")[8].querySelector("input").value;
+
+                allItems.push(singleItem);
+
+            })
+
+            let dataObj = {};
+            dataObj.Supplier_name = document.getElementById("party").value;
+            dataObj.party_id = document.getElementById("partyuniceID").value;
+            dataObj.party_contact_number = document.getElementById("partyPhone").value;
+            dataObj.purchase_date = document.getElementById("dateInput").value;
+            dataObj.total_amount = document.getElementById("grandTotal").textContent;
+            dataObj.purchase_items = allItems
+
+            let purchase_invoice_numbervar = document.getElementById("editpurchase_invoice_number").getAttribute("data-purchase_invoice_number");
+
+            // console.log(dataObj);
+            try {
+                    const response = await fetch(`/edit-purchase/${purchase_invoice_numbervar}/`, {
+                        method: 'PUT',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(dataObj)
+                    });
+
+                    const result = await response.json();
+                    // console.log(result);
+
+                    if (response.ok) {
+                        const editedRow = document.getElementById(`purchaseRow${purchase_invoice_numbervar}`);
+                        let alltdData = editedRow.querySelectorAll("td");
+                        alltdData[1].textContent = dataObj.Supplier_name;
+                        alltdData[2].textContent = dataObj.party_contact_number;
+                        alltdData[3].textContent = dataObj.purchase_date;
+                        alltdData[4].textContent = dataObj.total_amount;
+                        alert(result.message);
+                        closeEditModal();
+                    } else {
+                        console.error('Error adding create_purchase:', result);
+                        alert(result.error);
+                    }
+                } catch (error) {
+                    // localStorage.setItem("offlineAddParty",JSON.stringify())
+                    console.error('Request failed:', error);
+                }
+        }
+
+
+</script>
 </body>
 
 </html>

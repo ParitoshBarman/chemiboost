@@ -278,6 +278,54 @@ def create_purchase(request):
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+
+@csrf_exempt
+def edit_purchase(request, purchase_id):
+    print("Working.........")
+    if request.method == "PUT" and request.user.is_authenticated:
+        try:
+            data = json.loads(request.body)
+
+            # Get the purchase object
+            purchase = get_object_or_404(Purchase, purchase_invoice_number=purchase_id)
+
+            # Update purchase details
+            purchase.Supplier_name = data.get("Supplier_name", purchase.Supplier_name)
+            purchase.Supplier_contact_number = data.get("Supplier_contact_number", purchase.Supplier_contact_number)
+            purchase.Supplier_email = data.get("Supplier_email", purchase.Supplier_email)
+            purchase.Supplier_address = data.get("Supplier_address", purchase.Supplier_address)
+            purchase.Supplier_gst = data.get("Supplier_gst", purchase.Supplier_gst)
+            purchase.total_amount = data.get("total_amount", purchase.total_amount)
+            purchase.purchase_date = data.get("purchase_date", purchase.purchase_date)
+
+            purchase.save()
+
+            # Update purchase items
+            items = data.get("purchase_items", [])
+
+            # Delete existing items and add new ones
+            PurchaseItem.objects.filter(purchase=purchase).delete()
+
+            for item in items:
+                PurchaseItem.objects.create(
+                    purchase=purchase,
+                    company=item.get("Company"),
+                    item_name=item.get("ItemName"),
+                    batch=item.get("Batch"),
+                    exp_date=item.get("ExpDate"),
+                    mrp=item.get("MRP"),
+                    rate=item.get("Rate"),
+                    qty=item.get("Qty"),
+                    total=item.get("Total"),
+                )
+
+            return JsonResponse({"success": True, "message": "Purchase updated successfully"})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
 @csrf_exempt
 def delete_purchase(request, purchase_id):
     if request.method == "DELETE" and request.user.is_authenticated:

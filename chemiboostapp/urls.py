@@ -19,6 +19,7 @@ urlpatterns = urlpatterns = [
     path("forgotpassword", views.forgotpassword, name='forgotpassword'),
     path("otp-verification/", views.otp_verification, name="otp_verification"),
     path("get_purchases/", views.get_purchases, name="get_purchases"),
+    path('edit-purchase/<int:purchase_id>/', views.edit_purchase, name="edit_purchase"),
     path("get_purchase_items/<int:purchase_id>", views.get_purchase_items, name="get_purchase_items"),
     path("purchase-history", views.purchase_list, name="purchase_list"),
     path("create_purchase", views.create_purchase, name="create_purchase"),

@@ -264,7 +264,6 @@
             let singleItem = {};
             itemTableRow.forEach((row) => {
                 singleItem = {};
-                console.log(row.querySelectorAll("td")[1].querySelector("input").value)
                 singleItem.Company = row.querySelectorAll("td")[1].querySelector("input").value;
                 singleItem.ItemName = row.querySelectorAll("td")[2].querySelector("input").value;
                 singleItem.Batch = row.querySelectorAll("td")[3].querySelector("input").value;
@@ -482,7 +481,7 @@
 
                     // Check the status of the response
                     if (response.ok) {
-                        console.log(data.message); // Success message
+                         // Success message
                         alert('Party deleted successfully!');
                     } else {
                         console.error(data.error); // Error message
