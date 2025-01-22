@@ -223,7 +223,7 @@
                 <td><input type="text" placeholder="Company"></td>
                 <td><input type="text" placeholder="Item Name"></td>
                 <td><input type="text" placeholder="Batch"></td>
-                <td><input type="date"></td>
+                <td><input type="month"></td>
                 <td><input type="number" placeholder="MRP"></td>
                 <td><input type="number" placeholder="Rate"></td>
                 <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)"></td>
@@ -360,7 +360,6 @@
 
                     if (response.ok) {
                         parties.push({ fields: { name, contact_number, email, gst_number, address }, pk: result.party_id });
-                        autoFillParty();
                         alert(result.message);
                     } else {
                         console.error('Error adding party:', result);
@@ -443,6 +442,7 @@
             `;
                 tableBody.appendChild(row);
             });
+            autoFillParty();
         }
 
         // Edit a party
