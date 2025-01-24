@@ -67,6 +67,8 @@ class Purchase(models.Model):
     purchase_items = models.JSONField(encoder=DjangoJSONEncoder, default=list)  # JSONField for storing items
 
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_amount_with_GST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    totalGSTamount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST amount")
 
     purchase_date = models.DateField()
     last_update_date = models.DateField(auto_now=True)
@@ -85,6 +87,10 @@ class PurchaseItem(models.Model):
     exp_date = models.DateField(null=True, blank=True, verbose_name="Expiration Date")
     mrp = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="MRP")
     rate = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Rate")
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Cgst In persentage")
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Sgst In persentage")
     qty = models.IntegerField(verbose_name="Quantity")
     total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total")
+    totalGSTamount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST amount")
+    totalWithGST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total with GST")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")

@@ -148,13 +148,27 @@
 
         #edititemTable>tr :nth-child(6) input,
         #edititemTable>tr :nth-child(7) input,
-        #edititemTable>tr :nth-child(8) input,
         #edititemTable>tr :nth-child(9) input {
             width: 60px;
             /* background-color: red; */
         }
-
-        #edititemTable>tr :nth-child(4) input {
+        
+        #edititemTable>tr :nth-child(8) input {
+            width: 40px;
+        }
+        
+        #edititemTable>tr :nth-child(4) input{
+            width: 80px;
+        }
+        #edititemTable>tr :nth-child(5) input {
+            width: 95px;
+        }
+        #edititemTable>tr :nth-child(10) input,
+        #edititemTable>tr :nth-child(11) input{
+            width: 50px;
+        }
+        #edititemTable>tr :nth-child(12) input,
+        #edititemTable>tr :nth-child(13) input{
             width: 90px;
         }
 
@@ -162,15 +176,21 @@
         #edititemTable>tr :nth-child(3) input {
             width: 100px;
         }
+        #edititemTable td{
+            padding: 5px;
+        }
+
+
 
         /* #edititemTable{
             overflow: scroll;
         } */
         #editInvoiceModal>div {
             overflow-x: scroll;
-            
+
         }
-        #editInvoiceModal>div::-webkit-scrollbar{
+
+        #editInvoiceModal>div::-webkit-scrollbar {
             width: 0;
             height: 0;
         }
@@ -260,6 +280,8 @@
                             <p><strong>Contact:</strong> <span id="supplierContact"></span></p>
                             <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
                             <p><strong>Total Amount:</strong> ₹<span id="totalAmount"></span></p>
+                            <p><strong>Total GST:</strong> ₹<span id="totalGST"></span></p>
+                            <p><strong>Total with GST:</strong> ₹<span id="totalWithGST"></span></p>
                         </div>
 
                         <!-- 📋 Purchase Items Table -->
@@ -274,6 +296,10 @@
                                     <th>Rate</th>
                                     <th>Qty</th>
                                     <th>Total</th>
+                                    <th>Cgst</th>
+                                    <th>Sgst</th>
+                                    <th>GST amount</th>
+                                    <th>Total With GST</th>
                                 </tr>
                             </thead>
                             <tbody id="itemTable">
@@ -327,6 +353,10 @@
                                     <th>Rate</th>
                                     <th>Qty</th>
                                     <th>Total</th>
+                                    <th>Cgst</th>
+                                    <th>Sgst</th>
+                                    <th>GST amount</th>
+                                    <th>Total With GST</th>
                                 </tr>
                             </thead>
                             <tbody id="edititemTable">
@@ -336,10 +366,17 @@
 
                         <div class="footer">
                             <button type="button" onclick="addRow()">Add Item</button>
-                            <button type="button" id="editpurchase_invoice_number" onclick="uploadEditData()">Save Invoice</button>
+                            <button type="button" id="editpurchase_invoice_number" onclick="uploadEditData()">Save
+                                Invoice</button>
                         </div>
                         <div class="summary">
                             <p><strong>Grand Total: ₹</strong><span id="grandTotal">0.00</span></p>
+                        </div>
+                        <div class="summary">
+                            <p><strong>GST Total: ₹</strong><span id="TotalGSTamountOnly">0.00</span></p>
+                        </div>
+                        <div class="summary">
+                            <p><strong>Grand Total with GST: ₹</strong><span id="grandTotalWithGST">0.00</span></p>
                         </div>
 
                     </div>
@@ -406,6 +443,7 @@
             fetch(`/get_purchase_items/${purchaseId}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data)
                     let purchase = data.purchase;
 
                     // 📝 Fill in purchase details
@@ -414,6 +452,8 @@
                     document.getElementById("supplierContact").textContent = purchase.Supplier_contact_number || "N/A";
                     document.getElementById("purchaseDate").textContent = purchase.purchase_date;
                     document.getElementById("totalAmount").textContent = purchase.total_amount;
+                    document.getElementById("totalGST").textContent = purchase.totalGSTamount;
+                    document.getElementById("totalWithGST").textContent = purchase.total_amount_with_GST;
 
                     let itemTable = document.getElementById("itemTable");
                     itemTable.innerHTML = "";
@@ -429,7 +469,10 @@
                         <td>${item.rate}</td>
                         <td>${item.qty}</td>
                         <td>${item.total}</td>
-                    `;
+                        <td>${item.cgst}</td>
+                        <td>${item.sgst}</td>
+                        <td>${item.totalGSTamount}</td>
+                        <td>${item.totalWithGST}</td>`;
                         itemTable.appendChild(row);
                     });
 
@@ -440,8 +483,13 @@
     <td style="border: none;"></td>
     <td style="border: none;"></td>
     <td style="border: none;"></td>
-    <td style="border-top: 2px solid black; font-weight: bold;text-align:right;">Grand Total:</td>
-    <td style="border-top: 2px solid black; font-weight: bold;text-align:left;">${purchase.total_amount}</td>`;
+    <td style="border-top: 2px solid black; font-weight: bold;text-align:right;">Total:</td>
+    <td style="border-top: 2px solid black; font-weight: bold;text-align:left;">${purchase.total_amount}</td>
+    <td style="border: none;"></td>
+    <td style="border: none;"></td>
+    <td style="border-top: 2px solid black; font-weight: bold;text-align:right;">Total with GST:</td>
+    <td style="border-top: 2px solid black; font-weight: bold;text-align:left;">${purchase.total_amount_with_GST}</td>
+    `;
                     itemTable.appendChild(rowLast);
 
 
@@ -530,6 +578,8 @@
                     document.getElementById("partyPhone").value = data.purchase.Supplier_contact_number;
                     document.getElementById("dateInput").value = data.purchase.purchase_date;
                     document.getElementById("grandTotal").textContent = data.purchase.total_amount;
+                    document.getElementById("TotalGSTamountOnly").textContent = data.purchase.totalGSTamount;
+                    document.getElementById("grandTotalWithGST").textContent = data.purchase.total_amount_with_GST;
                     document.getElementById("editpurchase_invoice_number").setAttribute("data-purchase_invoice_number", data.purchase.purchase_invoice_number);
 
                     const table = document.getElementById('edititemTable');
@@ -544,9 +594,13 @@
                 <td><input type="text" value="${itm.batch}" placeholder="Batch"></td>
                 <td><input type="date" value="${itm.exp_date}"></td>
                 <td><input type="number" value="${itm.mrp}" placeholder="MRP"></td>
-                <td><input type="number" value="${itm.rate}" placeholder="Rate"></td>
+                <td><input type="number" value="${itm.rate}" placeholder="Rate" onkeyup="calculateTotal(this)"></td>
                 <td><input type="number" value="${itm.qty}" placeholder="Qty" onkeyup="calculateTotal(this)"></td>
                 <td><input type="number" value="${itm.total}" placeholder="Total" readonly></td>
+                <td><input type="number" placeholder="Cgst" onkeyup="calculateTotal(this)" value="${itm.cgst}"></td>
+                <td><input type="number" placeholder="Sgst" onkeyup="calculateTotal(this)" value="${itm.sgst}"></td>
+                <td><input type="number" placeholder="Total GST Amount" value="${itm.totalGSTamount}" readonly></td>
+                <td><input type="number" placeholder="Total With GST" value="${itm.totalWithGST}" readonly></td>
             `;
 
                         table.appendChild(row);
@@ -558,7 +612,7 @@
                 .catch(error => console.error("Error fetching invoice data:", error));
         }
 
-        
+
 
         // Close Edit Modal
         function closeEditModal() {
@@ -568,52 +622,99 @@
 
     </script>
 
-<script>
-    
-    function addRow() {
-        let rowCount = document.getElementById('edititemTable').childElementCount;
-        const table = document.getElementById('edititemTable');
-        const row = document.createElement('tr');
+    <script>
 
-        row.innerHTML = `
-            <td>${rowCount+1}</td>
+        function addRow() {
+            let rowCount = document.getElementById('edititemTable').childElementCount;
+            const table = document.getElementById('edititemTable');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+            <td>${rowCount + 1}</td>
             <td><input type="text" placeholder="Company"></td>
             <td><input type="text" placeholder="Item Name"></td>
             <td><input type="text" placeholder="Batch"></td>
             <td><input type="date"></td>
             <td><input type="number" placeholder="MRP"></td>
-            <td><input type="number" placeholder="Rate"></td>
+            <td><input type="number" placeholder="Rate" onkeyup="calculateTotal(this)"></td>
             <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)"></td>
             <td><input type="number" placeholder="Total" readonly></td>
+            <td><input type="number" placeholder="Cgst" onkeyup="calculateTotal(this)" value="0"></td>
+            <td><input type="number" placeholder="Sgst" onkeyup="calculateTotal(this)" value="0"></td>
+            <td><input type="number" placeholder="Total GST Amount" readonly></td>
+            <td><input type="number" placeholder="Total With GST" readonly></td>
         `;
 
-        table.appendChild(row);
-        rowCount++;
-    }
-
-    function calculateTotal(input) {
-        const row = input.parentElement.parentElement;
-        const rate = row.querySelector('td:nth-child(7) input').value;
-        const qty = input.value;
-        const totalCell = row.querySelector('td:nth-child(9) input');
-
-        totalCell.value = (rate * qty).toFixed(2);
-        calculateGrandTotal();
-
-        function calculateGrandTotal() {
-            const rows = document.querySelectorAll('#edititemTable tr');
-            grandTotal = 0;
-
-            rows.forEach(row => {
-                const total = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
-                grandTotal += total;
-            });
-
-            document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+            table.appendChild(row);
+            rowCount++;
         }
-    }
 
-    async function uploadEditData() {
+        function calculateTotal(input) {
+            const row = input.parentElement.parentElement;
+            const rate = row.querySelector('td:nth-child(7) input').value;
+            const qty = row.querySelector('td:nth-child(8) input').value;
+            const totalCell = row.querySelector('td:nth-child(9) input');
+
+            totalCell.value = (rate * qty).toFixed(2);
+            calculateGrandTotal();
+
+
+
+            function calculateGrandTotal() {
+                const rows = document.querySelectorAll('#itemTable tr');
+                grandTotal = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+                    grandTotal += total;
+                });
+
+                document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+                calculateGSTamount();
+            }
+
+            function calculateTotalWithGST() {
+                const rows = document.querySelectorAll('#itemTable tr');
+                TotalwithGST = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(13) input').value) || 0;
+                    TotalwithGST += total;
+                });
+
+                document.getElementById('grandTotalWithGST').innerText = TotalwithGST.toFixed(2);
+                calculateTotalGSTamountOnly();
+            }
+
+            function calculateGSTamount() {
+                const row = input.parentElement.parentElement;
+                const cgst = row.querySelector('td:nth-child(10) input').value;
+                const sgst = row.querySelector('td:nth-child(11) input').value;
+                const total = row.querySelector('td:nth-child(9) input').value;
+                const GSTamount = row.querySelector('td:nth-child(12) input');
+                const totalWithGST = row.querySelector('td:nth-child(13) input');
+
+                totalGrossGSTPersentage = parseFloat(cgst) + parseFloat(sgst); // need correction
+                gstAmount = ((totalGrossGSTPersentage / 100).toFixed(2) * parseFloat(total)).toFixed(2)
+                GSTamount.value = gstAmount;
+                totalWithGST.value = parseFloat(gstAmount) + parseFloat(total);
+                calculateTotalWithGST();
+            }
+
+            function calculateTotalGSTamountOnly() {
+                const rows = document.querySelectorAll('#itemTable tr');
+                TotalGSTamountOnly = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(12) input').value) || 0;
+                    TotalGSTamountOnly += total;
+                });
+
+                document.getElementById('TotalGSTamountOnly').innerText = TotalGSTamountOnly.toFixed(2);
+            }
+        }
+
+        async function uploadEditData() {
             let allItems = [];
 
             let itemTableRow = document.querySelectorAll("#edititemTable>tr");
@@ -645,38 +746,38 @@
 
             // console.log(dataObj);
             try {
-                    const response = await fetch(`/edit-purchase/${purchase_invoice_numbervar}/`, {
-                        method: 'PUT',
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(dataObj)
-                    });
+                const response = await fetch(`/edit-purchase/${purchase_invoice_numbervar}/`, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(dataObj)
+                });
 
-                    const result = await response.json();
-                    // console.log(result);
+                const result = await response.json();
+                // console.log(result);
 
-                    if (response.ok) {
-                        const editedRow = document.getElementById(`purchaseRow${purchase_invoice_numbervar}`);
-                        let alltdData = editedRow.querySelectorAll("td");
-                        alltdData[1].textContent = dataObj.Supplier_name;
-                        alltdData[2].textContent = dataObj.party_contact_number;
-                        alltdData[3].textContent = dataObj.purchase_date;
-                        alltdData[4].textContent = dataObj.total_amount;
-                        alert(result.message);
-                        closeEditModal();
-                    } else {
-                        console.error('Error adding create_purchase:', result);
-                        alert(result.error);
-                    }
-                } catch (error) {
-                    // localStorage.setItem("offlineAddParty",JSON.stringify())
-                    console.error('Request failed:', error);
+                if (response.ok) {
+                    const editedRow = document.getElementById(`purchaseRow${purchase_invoice_numbervar}`);
+                    let alltdData = editedRow.querySelectorAll("td");
+                    alltdData[1].textContent = dataObj.Supplier_name;
+                    alltdData[2].textContent = dataObj.party_contact_number;
+                    alltdData[3].textContent = dataObj.purchase_date;
+                    alltdData[4].textContent = dataObj.total_amount;
+                    alert(result.message);
+                    closeEditModal();
+                } else {
+                    console.error('Error adding create_purchase:', result);
+                    alert(result.error);
                 }
+            } catch (error) {
+                // localStorage.setItem("offlineAddParty",JSON.stringify())
+                console.error('Request failed:', error);
+            }
         }
 
 
-</script>
+    </script>
 </body>
 
 </html>

@@ -155,7 +155,11 @@ def get_purchases(request):
                     "MRP": item.mrp,
                     "Rate": item.rate,
                     "Qty": item.qty,
-                    "Total": item.total
+                    "Total": item.total,
+                    "cgst": item.cgst,
+                    "sgst": item.sgst,
+                    "totalGSTamount": item.totalGSTamount,
+                    "totalWithGST": item.totalWithGST,
                 }
                 for item in purchase_items
             ]
@@ -166,6 +170,8 @@ def get_purchases(request):
                 "Supplier_contact_number": purchase.Supplier_contact_number,
                 "purchase_date": purchase.purchase_date.strftime("%Y-%m-%d"),
                 "total_amount": purchase.total_amount,
+                "total_amount_with_GST": purchase.total_amount_with_GST,
+                "totalGSTamount": purchase.totalGSTamount,
                 "purchase_items": items_list
             })
 
@@ -198,6 +204,8 @@ def get_purchase_items(request, purchase_id):
             "Supplier_email": purchase.Supplier_email,
             "Supplier_address": purchase.Supplier_address,
             "Supplier_gst": purchase.Supplier_gst,
+            "totalGSTamount": purchase.totalGSTamount,
+            "total_amount_with_GST": purchase.total_amount_with_GST,
             "total_amount": str(purchase.total_amount),  # Convert Decimal to string for JSON compatibility
             "purchase_date": purchase.purchase_date.strftime("%Y-%m-%d"),
             "items": [
@@ -210,6 +218,10 @@ def get_purchase_items(request, purchase_id):
                     "rate": str(item.rate),
                     "qty": item.qty,
                     "total": str(item.total),
+                    "cgst": item.cgst,
+                    "sgst": item.sgst,
+                    "totalGSTamount": item.totalGSTamount,
+                    "totalWithGST": item.totalWithGST,
                 }
                 for item in items
             ],
@@ -252,6 +264,8 @@ def create_purchase(request):
                 purchase_date=datetime.strptime(data.get("purchase_date"), "%Y-%m-%d").date(),
                 total_amount=data.get("total_amount"),
                 purchase_items=data.get("purchase_items"),
+                total_amount_with_GST=data.get("total_amount_with_GST"),
+                totalGSTamount=data.get("totalGSTamount"),
             )
 
             # Create PurchaseItem records
@@ -267,6 +281,10 @@ def create_purchase(request):
                     rate=item.get("Rate"),
                     qty=item.get("Qty"),
                     total=item.get("Total"),
+                    cgst=item.get("cgst"),
+                    sgst=item.get("sgst"),
+                    totalGSTamount=item.get("totalGSTamount"),
+                    totalWithGST=item.get("totalWithGST"),
                 )
 
             return JsonResponse({"message": "Purchase created successfully!"}, status=201)
@@ -297,6 +315,8 @@ def edit_purchase(request, purchase_id):
             purchase.Supplier_gst = data.get("Supplier_gst", purchase.Supplier_gst)
             purchase.total_amount = data.get("total_amount", purchase.total_amount)
             purchase.purchase_date = data.get("purchase_date", purchase.purchase_date)
+            purchase.totalGSTamount = data.get("totalGSTamount", purchase.totalGSTamount)
+            purchase.total_amount_with_GST = data.get("total_amount_with_GST", purchase.total_amount_with_GST)
 
             purchase.save()
 
@@ -317,6 +337,10 @@ def edit_purchase(request, purchase_id):
                     rate=item.get("Rate"),
                     qty=item.get("Qty"),
                     total=item.get("Total"),
+                    cgst=item.get("cgst"),
+                    sgst=item.get("sgst"),
+                    totalGSTamount=item.get("totalGSTamount"),
+                    totalWithGST=item.get("totalWithGST"),
                 )
 
             return JsonResponse({"success": True, "message": "Purchase updated successfully"})

@@ -71,14 +71,22 @@ td {
 th {
     background-color: var(--theamcolor);
 }
-#itemTable>tr :nth-child(6) input, #itemTable>tr :nth-child(7) input, #itemTable>tr :nth-child(8) input, #itemTable>tr :nth-child(9) input{
+#itemTable>tr :nth-child(6) input, #itemTable>tr :nth-child(7) input, #itemTable>tr :nth-child(8) input, #itemTable>tr :nth-child(10) input, #itemTable>tr :nth-child(11) input{
     width: 60px;
     /* background-color: red; */
 }
 #itemTable>tr :nth-child(4) input{
-    width: 100px;
+    width: 80px;
 }
-
+#itemTable>tr :nth-child(5) input{
+    width: 95px;
+}
+#itemTable>tr :nth-child(2) input, #itemTable>tr :nth-child(3) input{
+width: 110px;
+}
+#itemTable>tr :nth-child(12) input, #itemTable>tr :nth-child(13) input, #itemTable>tr :nth-child(9) input{
+    width: 90px;
+}
 .footer {
     margin-top: 20px;
     display: flex;

@@ -37,7 +37,7 @@
 
         .partysection th,
         td {
-            padding: 10px;
+            padding: 5px;
             text-align: left;
         }
 
@@ -151,6 +151,10 @@
                             <th>Rate</th>
                             <th>Qty</th>
                             <th>Total</th>
+                            <th>Cgst</th>
+                            <th>Sgst</th>
+                            <th>GST amount</th>
+                            <th>Total With GST</th>
                         </tr>
                     </thead>
                     <tbody id="itemTable">
@@ -164,6 +168,12 @@
                 </div>
                 <div class="summary">
                     <p><strong>Grand Total: ₹</strong><span id="grandTotal">0.00</span></p>
+                </div>
+                <div class="summary">
+                    <p><strong>GST Total: ₹</strong><span id="TotalGSTamountOnly">0.00</span></p>
+                </div>
+                <div class="summary">
+                    <p><strong>Grand Total with GST: ₹</strong><span id="grandTotalWithGST">0.00</span></p>
                 </div>
             </div>
         </div>
@@ -223,11 +233,15 @@
                 <td><input type="text" placeholder="Company"></td>
                 <td><input type="text" placeholder="Item Name"></td>
                 <td><input type="text" placeholder="Batch"></td>
-                <td><input type="month"></td>
+                <td><input type="date"></td>
                 <td><input type="number" placeholder="MRP"></td>
-                <td><input type="number" placeholder="Rate"></td>
+                <td><input type="number" placeholder="Rate" onkeyup="calculateTotal(this)"></td>
                 <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)"></td>
                 <td><input type="number" placeholder="Total" readonly></td>
+                <td><input type="number" placeholder="Cgst" onkeyup="calculateTotal(this)" value="0"></td>
+                <td><input type="number" placeholder="Sgst" onkeyup="calculateTotal(this)" value="0"></td>
+                <td><input type="number" placeholder="Total GST Amount" readonly></td>
+                <td><input type="number" placeholder="Total With GST" readonly></td>
             `;
 
             table.appendChild(row);
@@ -237,11 +251,13 @@
         function calculateTotal(input) {
             const row = input.parentElement.parentElement;
             const rate = row.querySelector('td:nth-child(7) input').value;
-            const qty = input.value;
+            const qty = row.querySelector('td:nth-child(8) input').value;
             const totalCell = row.querySelector('td:nth-child(9) input');
 
             totalCell.value = (rate * qty).toFixed(2);
             calculateGrandTotal();
+            
+            
 
             function calculateGrandTotal() {
                 const rows = document.querySelectorAll('#itemTable tr');
@@ -253,6 +269,47 @@
                 });
 
                 document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+                calculateGSTamount();
+            }
+
+            function calculateTotalWithGST() {
+                const rows = document.querySelectorAll('#itemTable tr');
+                TotalwithGST = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(13) input').value) || 0;
+                    TotalwithGST += total;
+                });
+
+                document.getElementById('grandTotalWithGST').innerText = TotalwithGST.toFixed(2);
+                calculateTotalGSTamountOnly();
+            }
+
+            function calculateGSTamount(){
+                const row = input.parentElement.parentElement;
+                const cgst = row.querySelector('td:nth-child(10) input').value;
+                const sgst = row.querySelector('td:nth-child(11) input').value;
+                const total = row.querySelector('td:nth-child(9) input').value;
+                const GSTamount = row.querySelector('td:nth-child(12) input');
+                const totalWithGST = row.querySelector('td:nth-child(13) input');
+
+                totalGrossGSTPersentage = parseFloat(cgst) + parseFloat(sgst); // need correction
+                gstAmount = ((totalGrossGSTPersentage/100).toFixed(2)*parseFloat(total)).toFixed(2)
+                GSTamount.value = gstAmount;
+                totalWithGST.value = parseFloat(gstAmount) + parseFloat(total);
+                calculateTotalWithGST();
+            }
+
+            function calculateTotalGSTamountOnly(){
+                const rows = document.querySelectorAll('#itemTable tr');
+                TotalGSTamountOnly = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(12) input').value) || 0;
+                    TotalGSTamountOnly += total;
+                });
+
+                document.getElementById('TotalGSTamountOnly').innerText = TotalGSTamountOnly.toFixed(2);
             }
         }
 
@@ -272,6 +329,10 @@
                 singleItem.Rate = row.querySelectorAll("td")[6].querySelector("input").value;
                 singleItem.Qty = row.querySelectorAll("td")[7].querySelector("input").value;
                 singleItem.Total = row.querySelectorAll("td")[8].querySelector("input").value;
+                singleItem.cgst = row.querySelectorAll("td")[9].querySelector("input").value;
+                singleItem.sgst = row.querySelectorAll("td")[10].querySelector("input").value;
+                singleItem.totalGSTamount = row.querySelectorAll("td")[11].querySelector("input").value;
+                singleItem.totalWithGST = row.querySelectorAll("td")[12].querySelector("input").value;
 
                 allItems.push(singleItem);
 
@@ -283,6 +344,8 @@
             dataObj.party_contact_number = document.getElementById("partyPhone").value;
             dataObj.purchase_date = document.getElementById("dateInput").value;
             dataObj.total_amount = document.getElementById("grandTotal").textContent;
+            dataObj.totalGSTamount = document.getElementById("TotalGSTamountOnly").textContent;
+            dataObj.total_amount_with_GST = document.getElementById("grandTotalWithGST").textContent;
             dataObj.purchase_items = allItems
 
             // console.log(dataObj);
