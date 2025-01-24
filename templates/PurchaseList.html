@@ -82,7 +82,8 @@
             margin: 10% auto;
             padding: 20px;
             border-radius: 8px;
-            width: 60%;
+            min-width: 1075px;
+            max-width: 98%;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
@@ -525,7 +526,7 @@
             newWindow.document.write("<style>");
             newWindow.document.write("body { font-family: Arial, sans-serif; padding: 20px; }");
             newWindow.document.write("table { width: 100%; border-collapse: collapse; margin-top: 10px; }");
-            newWindow.document.write("th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }");
+            newWindow.document.write("th, td { padding: 6px; border: 1px solid #ddd; text-align: center; }");
             newWindow.document.write("th { background-color: #007bff; color: white; }");
             newWindow.document.write("</style>");
             newWindow.document.write("</head><body>");
@@ -661,7 +662,7 @@
 
 
             function calculateGrandTotal() {
-                const rows = document.querySelectorAll('#itemTable tr');
+                const rows = document.querySelectorAll('#edititemTable tr');
                 grandTotal = 0;
 
                 rows.forEach(row => {
@@ -674,7 +675,7 @@
             }
 
             function calculateTotalWithGST() {
-                const rows = document.querySelectorAll('#itemTable tr');
+                const rows = document.querySelectorAll('#edititemTable tr');
                 TotalwithGST = 0;
 
                 rows.forEach(row => {
@@ -697,12 +698,12 @@
                 totalGrossGSTPersentage = parseFloat(cgst) + parseFloat(sgst); // need correction
                 gstAmount = ((totalGrossGSTPersentage / 100).toFixed(2) * parseFloat(total)).toFixed(2)
                 GSTamount.value = gstAmount;
-                totalWithGST.value = parseFloat(gstAmount) + parseFloat(total);
+                totalWithGST.value = (parseFloat(gstAmount) + parseFloat(total)).toFixed(2);
                 calculateTotalWithGST();
             }
 
             function calculateTotalGSTamountOnly() {
-                const rows = document.querySelectorAll('#itemTable tr');
+                const rows = document.querySelectorAll('#edititemTable tr');
                 TotalGSTamountOnly = 0;
 
                 rows.forEach(row => {
@@ -729,6 +730,10 @@
                 singleItem.Rate = row.querySelectorAll("td")[6].querySelector("input").value;
                 singleItem.Qty = row.querySelectorAll("td")[7].querySelector("input").value;
                 singleItem.Total = row.querySelectorAll("td")[8].querySelector("input").value;
+                singleItem.cgst = row.querySelectorAll("td")[9].querySelector("input").value;
+                singleItem.sgst = row.querySelectorAll("td")[10].querySelector("input").value;
+                singleItem.totalGSTamount = row.querySelectorAll("td")[11].querySelector("input").value;
+                singleItem.totalWithGST = row.querySelectorAll("td")[12].querySelector("input").value;
 
                 allItems.push(singleItem);
 
@@ -740,6 +745,8 @@
             dataObj.party_contact_number = document.getElementById("partyPhone").value;
             dataObj.purchase_date = document.getElementById("dateInput").value;
             dataObj.total_amount = document.getElementById("grandTotal").textContent;
+            dataObj.totalGSTamount = document.getElementById("TotalGSTamountOnly").textContent;
+            dataObj.total_amount_with_GST = document.getElementById("grandTotalWithGST").textContent;
             dataObj.purchase_items = allItems
 
             let purchase_invoice_numbervar = document.getElementById("editpurchase_invoice_number").getAttribute("data-purchase_invoice_number");
