@@ -28,5 +28,6 @@ urlpatterns = urlpatterns = [
     path('addparty', views.add_party, name='add_party'),
     path('editparty/<int:party_id>', views.edit_party, name='edit_party'),
     path('deleteparty/<int:party_id>', views.delete_party, name='delete_party'),
-    path("test", views.test, name='test')
+    path("test", views.test, name='test'),
+    path("render_pdf_view", views.render_pdf_view, name='render_pdf_view')
 ]

@@ -11,6 +11,8 @@ from chemiboostapp.models import Party, UserDetails, Purchase, PurchaseItem
 from django.core import serializers
 from datetime import datetime
 from django.core.paginator import Paginator
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 mytoken = "hjhhkjhjhkjhjkghghjgjhghg"
 
@@ -499,3 +501,47 @@ def webhook(request):
             return HttpResponse(status=404)
     return HttpResponse(status=405)
     
+
+
+def render_pdf_view(request):
+    # Invoice Data (Replace with dynamic data from DB)
+    invoice_data = {
+        "invoice_no": "INV-2024001",
+        "date": datetime.today().strftime("%d %m, %Y"),
+        "company_name": "Alpha Tech Assist",
+        "company_address": "Sector-6, Rohini, Delhi-110085",
+        "company_email": "support@alphatechassist.com",
+        "company_phone": "+91 98765 43210",
+        "client_name": "John Doe",
+        "client_address": "123 Street, New York, USA",
+        "client_email": "johndoe@email.com",
+        "items": [
+            {"name": "Website Development", "qty": 1, "unit_price": 50000},
+            {"name": "SEO Services", "qty": 1, "unit_price": 10000},
+            {"name": "Maintenance", "qty": 1, "unit_price": 5000},
+        ],
+        "tax_percent": 18,  # GST 18%
+    }
+
+    # Calculate totals
+    subtotal = sum(item["qty"] * item["unit_price"] for item in invoice_data["items"])
+    tax_amount = (subtotal * invoice_data["tax_percent"]) / 100
+    total_amount = subtotal + tax_amount
+
+    invoice_data["subtotal"] = subtotal
+    invoice_data["tax_amount"] = tax_amount
+    invoice_data["total_amount"] = total_amount
+
+    # Load HTML template
+    template = get_template("invoice_template.html")
+    html = template.render(invoice_data)
+
+    # Generate PDF response
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{invoice_data["invoice_no"]}.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse("Error generating PDF", content_type="text/plain")
+
+    return response
