@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.contrib.auth.models import User
+from django.db.models import F
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import JsonResponse
@@ -7,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from chemiboostapp import whatsappcloud
 from django.contrib.auth.decorators import login_required
-from chemiboostapp.models import Party, UserDetails, Purchase, PurchaseItem
+from chemiboostapp.models import Party, UserDetails, Purchase, PurchaseItem, MedicineStock
 from django.core import serializers
 from datetime import datetime
 from django.core.paginator import Paginator
@@ -293,7 +294,33 @@ def create_purchase(request):
                     totalWithGST=item.get("totalWithGST"),
                 )
 
-            return JsonResponse({"message": "Purchase created successfully!", "purchase_invoice_number":purchase.purchase_invoice_number}, status=201)
+                # Update or create stock
+                stock, created = MedicineStock.objects.get_or_create(
+                    ref_user=user.username,
+                    batch=item["Batch"],
+                    defaults={
+                        "company": item["Company"],
+                        "item_name": item["ItemName"],
+                        "exp_date": datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None,
+                        "qty": item["Qty"],
+                        "mrp": item["MRP"],
+                        "rate": item["Rate"],
+                        "cgst": item["cgst"],
+                        "sgst": item["sgst"],
+                        "total": item["Total"],
+                        "totalGSTamount": item["totalGSTamount"],
+                        "totalWithGST": item["totalWithGST"],
+                    }
+                )
+
+                if not created:
+                    # If stock exists, update quantity and expiration date
+                    stock.qty = F("qty") + item["Qty"]
+                    stock.exp_date = datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None
+                    stock.save()
+
+
+            return JsonResponse({"message": "Purchase created and stock updated successfully", "purchase_invoice_number":purchase.purchase_invoice_number}, status=201)
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
@@ -329,7 +356,17 @@ def edit_purchase(request, purchase_id):
             items = data.get("purchase_items", [])
 
             # Delete existing items and add new ones
-            PurchaseItem.objects.filter(purchase=purchase).delete()
+            existing_items = PurchaseItem.objects.filter(purchase=purchase)
+            for item in existing_items:
+                stock_item = MedicineStock.objects.filter(
+                    ref_user=request.user, batch=item.batch,
+                ).first()
+                if stock_item:
+                    stock_item.qty -= item.qty  # Reduce stock by previous qty
+                    stock_item.save()
+
+            # Delete existing purchase items
+            existing_items.delete()
 
             for item in items:
                 PurchaseItem.objects.create(
@@ -347,6 +384,32 @@ def edit_purchase(request, purchase_id):
                     totalGSTamount=item.get("totalGSTamount"),
                     totalWithGST=item.get("totalWithGST"),
                 )
+                
+                # Update or create stock
+                stock, created = MedicineStock.objects.get_or_create(
+                    ref_user=request.user,
+                    batch=item["Batch"],
+                    defaults={
+                        "company": item["Company"],
+                        "item_name": item["ItemName"],
+                        "exp_date": datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None,
+                        "qty": item["Qty"],
+                        "mrp": item["MRP"],
+                        "rate": item["Rate"],
+                        "cgst": item["cgst"],
+                        "sgst": item["sgst"],
+                        "total": item["Total"],
+                        "totalGSTamount": item["totalGSTamount"],
+                        "totalWithGST": item["totalWithGST"],
+                    }
+                )
+
+                if not created:
+                    # If stock exists, update quantity and expiration date
+                    stock.qty = F("qty") + item["Qty"]
+                    stock.exp_date = datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None
+                    stock.save()
+
 
             return JsonResponse({"success": True, "message": "Purchase updated successfully", "purchase_invoice_number":purchase.purchase_invoice_number})
 

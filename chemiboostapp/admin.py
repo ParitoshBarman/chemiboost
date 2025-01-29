@@ -1,5 +1,5 @@
 from django.contrib import admin
-from chemiboostapp.models import UserDetails, Purchase, Party, PurchaseItem
+from chemiboostapp.models import UserDetails, Purchase, Party, PurchaseItem, MedicineStock
 from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
@@ -24,3 +24,8 @@ class PurchaseItemV(ImportExportModelAdmin, admin.ModelAdmin):
     list_display=('purchase','company','item_name','batch', 'created_at')
 
 admin.site.register(PurchaseItem,PurchaseItemV)
+
+class MedicineStockV(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display=('company','item_name', 'qty', 'batch', 'created_at')
+
+admin.site.register(MedicineStock,MedicineStockV)
