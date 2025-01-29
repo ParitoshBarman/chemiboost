@@ -13,6 +13,10 @@ from datetime import datetime
 from django.core.paginator import Paginator
 from django.template.loader import get_template
 from xhtml2pdf import pisa
+from django.http import FileResponse
+from io import BytesIO
+import threading
+from chemiboostapp import extrafunction
 
 mytoken = "hjhhkjhjhkjhjkghghjgjhghg"
 
@@ -289,7 +293,7 @@ def create_purchase(request):
                     totalWithGST=item.get("totalWithGST"),
                 )
 
-            return JsonResponse({"message": "Purchase created successfully!"}, status=201)
+            return JsonResponse({"message": "Purchase created successfully!", "purchase_invoice_number":purchase.purchase_invoice_number}, status=201)
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
@@ -301,7 +305,6 @@ def create_purchase(request):
 
 @csrf_exempt
 def edit_purchase(request, purchase_id):
-    print("Working.........")
     if request.method == "PUT" and request.user.is_authenticated:
         try:
             data = json.loads(request.body)
@@ -345,7 +348,7 @@ def edit_purchase(request, purchase_id):
                     totalWithGST=item.get("totalWithGST"),
                 )
 
-            return JsonResponse({"success": True, "message": "Purchase updated successfully"})
+            return JsonResponse({"success": True, "message": "Purchase updated successfully", "purchase_invoice_number":purchase.purchase_invoice_number})
 
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=400)
@@ -502,46 +505,77 @@ def webhook(request):
     return HttpResponse(status=405)
     
 
+def download_invoice_pdf(request, purchase_id):
+    try:
+        # Fetch the purchase details from the database
+        purchase = Purchase.objects.get(purchase_invoice_number=purchase_id)
+        items = PurchaseItem.objects.filter(purchase=purchase)  # Assuming a related model for invoice items
 
-def render_pdf_view(request):
-    # Invoice Data (Replace with dynamic data from DB)
-    invoice_data = {
-        "invoice_no": "INV-2024001",
-        "date": datetime.today().strftime("%d %m, %Y"),
-        "company_name": "Alpha Tech Assist",
-        "company_address": "Sector-6, Rohini, Delhi-110085",
-        "company_email": "support@alphatechassist.com",
-        "company_phone": "+91 98765 43210",
-        "client_name": "John Doe",
-        "client_address": "123 Street, New York, USA",
-        "client_email": "johndoe@email.com",
-        "items": [
-            {"name": "Website Development", "qty": 1, "unit_price": 50000},
-            {"name": "SEO Services", "qty": 1, "unit_price": 10000},
-            {"name": "Maintenance", "qty": 1, "unit_price": 5000},
-        ],
-        "tax_percent": 18,  # GST 18%
-    }
+        # Prepare data for rendering
+        context = {
+            "invoice": purchase,
+            "items": items,
+        }
 
-    # Calculate totals
-    subtotal = sum(item["qty"] * item["unit_price"] for item in invoice_data["items"])
-    tax_amount = (subtotal * invoice_data["tax_percent"]) / 100
-    total_amount = subtotal + tax_amount
+        # Load the HTML template
+        template = get_template("purchase_invoice_template.html")
+        html = template.render(context)
 
-    invoice_data["subtotal"] = subtotal
-    invoice_data["tax_amount"] = tax_amount
-    invoice_data["total_amount"] = total_amount
+        # Create PDF
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="invoice{purchase_id}_{purchase.Supplier_name}.pdf"'
+        pisa_status = pisa.CreatePDF(html, dest=response)
 
-    # Load HTML template
-    template = get_template("invoice_template.html")
-    html = template.render(invoice_data)
+        if pisa_status.err:
+            return HttpResponse("We had some errors generating the PDF", status=500)
+        return response
 
-    # Generate PDF response
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{invoice_data["invoice_no"]}.pdf"'
+    except Purchase.DoesNotExist:
+        return HttpResponse("Invoice not found", status=404)
+    
 
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse("Error generating PDF", content_type="text/plain")
 
-    return response
+def generate_invoice_pdf(request, purchase_id):
+    print("Hi.........")
+    t1 = threading.Thread(target=extrafunction.deletExtraImages)
+    t1.start()
+    try:
+        # Fetch the purchase details from the database
+        purchase = Purchase.objects.get(purchase_invoice_number=purchase_id)
+        items = PurchaseItem.objects.filter(purchase=purchase)  # Assuming a related model for invoice items
+
+        # Prepare data for rendering
+        context = {
+            "invoice": purchase,
+            "items": items,
+        }
+        # Load HTML template
+        template = get_template("purchase_invoice_template.html")
+        html = template.render(context)
+
+        # Create a BytesIO buffer to hold the PDF data
+        # pdf_buffer = BytesIO()
+
+        # pisa_status = pisa.CreatePDF(html, dest=pdf_buffer)
+        fileName = f"./media/FileDBFolder/testPdf-{23569}.pdf"
+        print(fileName)
+
+        with open(fileName, "wb") as pdf_file:
+            pisa_status = pisa.CreatePDF(html, dest=pdf_file)
+        
+
+        
+
+        # if pisa_status.err:
+        #     return None, "Error generating PDF"
+        
+        # Seek to the beginning of the BytesIO buffer
+        # pdf_buffer.seek(0)
+
+        # Create a FileResponse with the generated PDF
+        # response = FileResponse(pdf_buffer, as_attachment=True, filename=f"invoice_{purchase.purchase_invoice_number}.pdf")
+        
+        return HttpResponse("Working...")
+
+    except Exception as e:
+        return None, str(e)

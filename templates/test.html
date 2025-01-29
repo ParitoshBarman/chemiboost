@@ -1,166 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expired Medicines</title>
+    <title>Invoice Preview</title>
     <style>
-        :root {
-            --theamcolor: rgb(26, 34, 44);
-            --theamcolorlite: rgb(36, 48, 63);
-            --fontcolor: rgb(255, 255, 255);
-            --dangercolor: rgb(255, 77, 77);
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: var(--theamcolor);
-            color: var(--fontcolor);
-        }
-
-        .container {
-            margin: 20px;
-            padding: 20px;
-            background-color: var(--theamcolorlite);
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            color: var(--fontcolor);
-        }
-
-        .search-bar {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .search-bar input {
-            width: 50%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            outline: none;
-        }
-
-        .search-bar input:focus {
-            border-color: var(--fontcolor);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        iframe { width: 100%; height: 600px; border: none; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
             margin-top: 10px;
+            cursor: pointer;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
         }
-
-        table thead {
-            background-color: var(--theamcolorlite);
-        }
-
-        table th,
-        table td {
-            border: 1px solid var(--theamcolor);
-            padding: 10px;
-            text-align: left;
-        }
-
-        table th {
-            background-color: var(--theamcolor);
-            color: var(--fontcolor);
-        }
-
-        table tr.expired {
-            background-color: var(--dangercolor);
-            color: white;
-        }
-
-        table tr:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
+        button:hover { background: #0056b3; }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Expired Medicines</h1>
-        </div>
 
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search for medicine..." oninput="filterMedicines()">
-        </div>
+    <h2>Invoice Preview</h2>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>SN</th>
-                    <th>Medicine Name</th>
-                    <th>Batch No</th>
-                    <th>Expiry Date</th>
-                    <th>Remaining Stock</th>
-                </tr>
-            </thead>
-            <tbody id="medicineTable">
-                <!-- Data will be dynamically populated -->
-            </tbody>
-        </table>
-    </div>
+    
+    <br>
+    <a href="http://127.0.0.1:8000/render_pdf_view.pdf" download>Print Invoice</a>
 
-    <script>
-        // Sample data (you can replace this with data fetched from your backend)
-        const medicines = [
-            { sn: 1, name: 'Paracetamol', batch: 'B123', expiry: '2024-01-01', stock: 20 },
-            { sn: 2, name: 'Amoxicillin', batch: 'B456', expiry: '2023-12-20', stock: 15 },
-            { sn: 3, name: 'Cough Syrup', batch: 'B789', expiry: '2023-12-05', stock: 5 },
-            { sn: 4, name: 'Ibuprofen', batch: 'B321', expiry: '2024-05-10', stock: 50 },
-            { sn: 5, name: 'Vitamin C', batch: 'B654', expiry: '2023-11-25', stock: 10 },
-        ];
 
-        // Function to render medicine data
-        function renderMedicines() {
-            const tableBody = document.getElementById('medicineTable');
-            tableBody.innerHTML = '';
 
-            const today = new Date().toISOString().split('T')[0];
-            medicines.forEach(med => {
-                const isExpired = new Date(med.expiry) < new Date(today);
-                const row = document.createElement('tr');
-                row.className = isExpired ? 'expired' : '';
-                row.innerHTML = `
-                    <td>${med.sn}</td>
-                    <td>${med.name}</td>
-                    <td>${med.batch}</td>
-                    <td>${med.expiry}</td>
-                    <td>${med.stock}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        // Function to filter medicines
-        function filterMedicines() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const tableBody = document.getElementById('medicineTable');
-            const rows = tableBody.querySelectorAll('tr');
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        }
-
-        // Render medicines on page load
-        renderMedicines();
-    </script>
 </body>
-
 </html>

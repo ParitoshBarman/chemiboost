@@ -29,5 +29,6 @@ urlpatterns = urlpatterns = [
     path('editparty/<int:party_id>', views.edit_party, name='edit_party'),
     path('deleteparty/<int:party_id>', views.delete_party, name='delete_party'),
     path("test", views.test, name='test'),
-    path("render_pdf_view", views.render_pdf_view, name='render_pdf_view')
+    path("download-invoice-pdf/<int:purchase_id>", views.download_invoice_pdf, name='download_invoice_pdf'),
+    path("generate_invoice_pdf/<int:purchase_id>", views.generate_invoice_pdf, name='generate_invoice_pdf'),
 ]

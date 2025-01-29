@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            margin: 0;
+        }
+        .header, .footer {
+            text-align: center;
+            font-weight: bold;
+        }
+        .supplier-info, .purchase-info {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .supplier-info td, .purchase-info td {
+            vertical-align: top;
+        }
+        .border-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .border-table th, .border-table td {
+            border: 1px solid black;
+            padding-top: 2px;
+            text-align: center;
+        }
+        .border-table th {
+            font-weight: bold;
+        }
+        .total-section {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">JD Medical - PURCHASE INVOICE</div>
+
+    <table class="supplier-info">
+        <tr>
+            <td><strong>Supplier Name:</strong> {{ invoice.Supplier_name }}</td>
+            <td><strong>Contact:</strong> {{ invoice.Supplier_contact_number }}</td>
+            <td><strong>Email:</strong> {{ invoice.Supplier_email }}</td>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>Address:</strong> {{ invoice.Supplier_address }}</td>
+            <td><strong>GSTIN:</strong> {{ invoice.Supplier_gst }}</td>
+        </tr>
+    </table>
+
+    <table class="purchase-info">
+        <tr>
+            <td><strong>Invoice No:</strong> {{ invoice.purchase_invoice_number }}</td>
+            <td><strong>Purchase Date:</strong> {{ invoice.purchase_date }}</td>
+            <td><strong>Updated On:</strong> {{ invoice.last_update_date }} {{ invoice.last_update_time }}</td>
+        </tr>
+    </table>
+
+    <table class="border-table">
+        <tr>
+            <th>Item</th>
+            <th>Batch</th>
+            <th>Exp. Date</th>
+            <th>MRP</th>
+            <th>Rate</th>
+            <th>Qty</th>
+            <th>Total</th>
+            <th>CGST%</th>
+            <th>SGST%</th>
+            <th>GST Amount</th>
+            <th>Total With GST</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.item_name }}</td>
+            <td>{{ item.batch }}</td>
+            <td>{{ item.exp_date }}</td>
+            <td>{{ item.mrp }}</td>
+            <td>{{ item.rate }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.total }}</td>
+            <td>{{ item.cgst }}</td>
+            <td>{{ item.sgst }}</td>
+            <td>{{ item.totalGSTamount }}</td>
+            <td>{{ item.totalWithGST }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="total-section">
+        <p><strong>Total Amount:</strong> Rs.{{ invoice.total_amount }}</p>
+        <p><strong>GST Total:</strong> Rs.{{ invoice.totalGSTamount }}</p>
+        <p><strong>Final Amount (With GST):</strong> Rs.{{ invoice.total_amount_with_GST }}</p>
+    </div>
+
+    <div class="footer">Thank you for your business!</div>
+
+</body>
+</html>

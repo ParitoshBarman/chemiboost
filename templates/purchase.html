@@ -220,7 +220,7 @@
 
     </div>
 
-
+    <script src='{% static "js/common.js" %}'></script>
     <script>
         let rowCount = 1;
 
@@ -256,8 +256,8 @@
 
             totalCell.value = (rate * qty).toFixed(2);
             calculateGrandTotal();
-            
-            
+
+
 
             function calculateGrandTotal() {
                 const rows = document.querySelectorAll('#itemTable tr');
@@ -285,7 +285,7 @@
                 calculateTotalGSTamountOnly();
             }
 
-            function calculateGSTamount(){
+            function calculateGSTamount() {
                 const row = input.parentElement.parentElement;
                 const cgst = row.querySelector('td:nth-child(10) input').value;
                 const sgst = row.querySelector('td:nth-child(11) input').value;
@@ -294,13 +294,13 @@
                 const totalWithGST = row.querySelector('td:nth-child(13) input');
 
                 totalGrossGSTPersentage = parseFloat(cgst) + parseFloat(sgst); // need correction
-                gstAmount = ((totalGrossGSTPersentage/100).toFixed(2)*parseFloat(total)).toFixed(2)
+                gstAmount = ((totalGrossGSTPersentage / 100).toFixed(2) * parseFloat(total)).toFixed(2)
                 GSTamount.value = gstAmount;
                 totalWithGST.value = parseFloat(gstAmount) + parseFloat(total);
                 calculateTotalWithGST();
             }
 
-            function calculateTotalGSTamountOnly(){
+            function calculateTotalGSTamountOnly() {
                 const rows = document.querySelectorAll('#itemTable tr');
                 TotalGSTamountOnly = 0;
 
@@ -350,29 +350,32 @@
 
             // console.log(dataObj);
             try {
-                    const response = await fetch(`/create_purchase`, {
-                        method: 'POST',
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(dataObj)
-                    });
+                const response = await fetch(`/create_purchase`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(dataObj)
+                });
 
-                    const result = await response.json();
-                    // console.log(result);
+                const result = await response.json();
 
-                    if (response.ok) {
-                        const table = document.getElementById('itemTable');
-                        table.innerHTML = null;
-                        alert(result.message);
-                    } else {
-                        console.error('Error adding create_purchase:', result);
-                        alert(result.error);
-                    }
-                } catch (error) {
-                    // localStorage.setItem("offlineAddParty",JSON.stringify())
-                    console.error('Request failed:', error);
+                if (response.ok) {
+                    const table = document.getElementById('itemTable');
+                    table.innerHTML = null;
+                    alert(result.message);
+
+                    // Example Usage
+                    downloadFile(`download-invoice-pdf/${result.purchase_invoice_number}`, `${dataObj.Supplier_name}_${result.purchase_invoice_number}_invoice.pdf`);
+
+                } else {
+                    console.error('Error adding create_purchase:', result);
+                    alert(result.error);
                 }
+            } catch (error) {
+                // localStorage.setItem("offlineAddParty",JSON.stringify())
+                console.error('Request failed:', error);
+            }
         }
 
         window.onload = function () {
@@ -544,7 +547,7 @@
 
                     // Check the status of the response
                     if (response.ok) {
-                         // Success message
+                        // Success message
                         alert('Party deleted successfully!');
                     } else {
                         console.error(data.error); // Error message
