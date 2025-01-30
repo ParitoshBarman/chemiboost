@@ -138,13 +138,9 @@
     <!-- JavaScript -->
     <script>
         // Sample stock data
-        const stockData = [
-            { name: "Paracetamol", quantity: 50 },
-            { name: "Amoxicillin", quantity: 0 },
-            { name: "Ibuprofen", quantity: 30 },
-            { name: "Cetirizine", quantity: 0 },
-            { name: "Vitamin C", quantity: 75 }
-        ];
+        const stockData = {{ stock_data|safe }};
+        console.log(stockData)
+        console.log(typeof stockData)
 
         function updateStockSummary() {
             const totalProducts = stockData.length;

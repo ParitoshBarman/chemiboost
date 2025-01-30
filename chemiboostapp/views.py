@@ -31,7 +31,40 @@ def purchase(request):
 def sales(request):
     return render(request, "sales.html")
 def stock(request):
-    return render(request, "stock.html")
+    # Fetch all stock items from the database
+    stock_items = MedicineStock.objects.all()
+
+    # Prepare stock data for rendering in the template
+    stock_data = [
+        {
+            "name": item.item_name,
+            "quantity": item.qty
+        }
+        for item in stock_items
+    ]
+
+    # Count total products
+    total_products = len(stock_data)
+
+    # Count out-of-stock items
+    out_of_stock = sum(1 for item in stock_data if item["quantity"] == 0)
+
+    # Count in-stock items
+    in_stock = total_products - out_of_stock
+
+    # Calculate total quantity of all medicines
+    total_quantity = sum(item["quantity"] for item in stock_data)
+
+    context = {
+        "stock_data": stock_data,
+        "total_products": total_products,
+        "out_of_stock": out_of_stock,
+        "in_stock": in_stock,
+        "total_quantity": total_quantity
+    }
+
+    # return render(request, "stock.html", context)
+    return render(request, "stock.html", context)
 def expiredmedicine(request):
     return render(request, "expiredmedicine.html")
 def mycustomers(request):

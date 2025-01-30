@@ -234,14 +234,14 @@
                 <td><input type="text" placeholder="Item Name"></td>
                 <td><input type="text" placeholder="Batch"></td>
                 <td><input type="date"></td>
-                <td><input type="number" placeholder="MRP"></td>
-                <td><input type="number" placeholder="Rate" onkeyup="calculateTotal(this)"></td>
-                <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)"></td>
-                <td><input type="number" placeholder="Total" readonly></td>
+                <td><input type="number" placeholder="MRP" value="0"></td>
+                <td><input type="number" placeholder="Rate" onkeyup="calculateTotal(this)" value="0"></td>
+                <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)" value="0"></td>
+                <td><input type="number" placeholder="Total" readonly value="0"></td>
                 <td><input type="number" placeholder="Cgst" onkeyup="calculateTotal(this)" value="0"></td>
                 <td><input type="number" placeholder="Sgst" onkeyup="calculateTotal(this)" value="0"></td>
-                <td><input type="number" placeholder="Total GST Amount" readonly></td>
-                <td><input type="number" placeholder="Total With GST" readonly></td>
+                <td><input type="number" placeholder="Total GST Amount" readonly value="0"></td>
+                <td><input type="number" placeholder="Total With GST" readonly value="0"></td>
             `;
 
             table.appendChild(row);

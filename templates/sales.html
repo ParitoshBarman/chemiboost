@@ -9,6 +9,68 @@
     <link rel="stylesheet" href='{% static "css/styles.css" %}'>
     <link rel="stylesheet" href='{% static "css/purchase.css" %}'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        #salesTable>tr>td:nth-child(2)>input {
+            width: 130px;
+        }
+
+        #salesTable>tr>td:nth-child(3)>input {
+            width: 90px;
+        }
+
+        #salesTable>tr>td:nth-child(9)>input {
+            width: 70px;
+        }
+
+        #salesTable>tr>td:nth-child(10)>input,
+        #salesTable>tr>td:nth-child(11)>input {
+            width: 110px;
+        }
+
+        #salesTable>tr>td:nth-child(4)>input,
+        #salesTable>tr>td:nth-child(5)>input,
+        #salesTable>tr>td:nth-child(6)>input,
+        #salesTable>tr>td:nth-child(7)>input,
+        #salesTable>tr>td:nth-child(8)>input {
+            width: 60px;
+        }
+
+
+
+        .suggestions {
+            position: absolute;
+            background: rgb(26 34 44);
+            /* border: 1px solid #ccc; */
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .suggestions div {
+            padding: 8px;
+            cursor: pointer;
+            border: 1px solid gray;
+        }
+
+        .suggestions div:hover {
+            background: rgb(82, 98, 117);
+        }
+
+        .input-group {
+            position: relative;
+            display: inline-block;
+            width: 250px;
+        }
+        .customersec{
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 23px;
+        }
+        .customersec input{
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
@@ -24,13 +86,19 @@
                 <!-- Form for Sales Details -->
                 <form method="POST" action="">
                     {% csrf_token %}
-                    <div class="form-group">
-                        <label for="customer">Customer Name:</label>
-                        <input type="text" id="customer" name="customer" placeholder="Enter Customer Name">
-                    </div>
-                    <div class="form-group">
-                        <label for="invoice">Mobile No:</label>
-                        <input type="text" id="invoice" name="invoice" placeholder="Enter Mobile Number">
+                    <div class="customersec">
+                        <div class="form-group input-group">
+                            <label for="customer">Customer Name:</label>
+                            <input type="text" id="customer" name="customer" placeholder="Enter Customer Name"
+                                onkeyup="searchCustomer(this)">
+                            <div id="customerSuggestions" class="suggestions"></div>
+                        </div>
+                        <div class="form-group input-group">
+                            <label for="phoneno">Mobile No:</label>
+                            <input type="text" id="phoneno" name="phoneno" placeholder="Enter Mobile Number"
+                                onkeyup="searchCustomer(this)">
+                            <div id="phoneSuggestions" class="suggestions"></div>
+                        </div>
                     </div>
 
                     <!-- Sales Items Table -->
@@ -44,7 +112,11 @@
                                     <th>Quantity</th>
                                     <th>Price</th>
                                     <th>Discount (%)</th>
+                                    <th>Cgst (%)</th>
+                                    <th>Sgst (%)</th>
+                                    <th>GST Amount</th>
                                     <th>Total</th>
+                                    <th>Total With GST</th>
                                 </tr>
                             </thead>
                             <tbody id="salesTable">
@@ -64,10 +136,15 @@
                 <div class="summary">
                     <p><strong>Grand Total: ₹</strong><span id="grandTotal">0.00</span></p>
                 </div>
+                <div class="summary">
+                    <p><strong>GST Total: ₹</strong><span id="TotalGSTamountOnly">0.00</span></p>
+                </div>
+                <div class="summary">
+                    <p><strong>Grand Total with GST: ₹</strong><span id="grandTotalWithGST">0.00</span></p>
+                </div>
             </div>
         </div>
     </main>
-
 
     <!-- JavaScript -->
     <script>
@@ -82,10 +159,14 @@
                 <td>${rowCount}</td>
                 <td><input type="text" name="item_name_${rowCount}" placeholder="Item Name"></td>
                 <td><input type="text" name="batch_${rowCount}" placeholder="Batch"></td>
-                <td><input type="number" name="quantity_${rowCount}" placeholder="Qty" onkeyup="updateTotal(this)"></td>
-                <td><input type="number" name="price_${rowCount}" placeholder="Price" onkeyup="updateTotal(this)"></td>
-                <td><input type="number" name="discount_${rowCount}" placeholder="Discount" onkeyup="updateTotal(this)"></td>
-                <td><input type="number" name="total_${rowCount}" placeholder="Total" readonly></td>
+                <td><input type="number" name="quantity_${rowCount}" placeholder="Qty" onkeyup="updateTotal(this)" value="0"></td>
+                <td><input type="number" name="price_${rowCount}" placeholder="Price" onkeyup="updateTotal(this)" value="0"></td>
+                <td><input type="number" name="discount_${rowCount}" placeholder="Discount" onkeyup="updateTotal(this)" value="0"></td>
+                <td><input type="number" name="cgst_${rowCount}" placeholder="Cgst" onkeyup="updateTotal(this)" value="0"></td>
+                <td><input type="number" name="sgst_${rowCount}" placeholder="Sgst" onkeyup="updateTotal(this)" value="0"></td>
+                <td><input type="number" name="gstAmount_${rowCount}" placeholder="GST Amount" readonly value="0"></td>
+                <td><input type="number" name="total_${rowCount}" placeholder="Total" readonly value="0"></td>
+                <td><input type="number" name="totalwithgst_${rowCount}" placeholder="Total With GST" readonly value="0"></td>
             `;
 
             table.appendChild(row);
@@ -99,21 +180,64 @@
             const discount = parseFloat(row.querySelector('td:nth-child(6) input').value) || 0;
 
             const total = (qty * price * (1 - discount / 100)).toFixed(2);
-            row.querySelector('td:nth-child(7) input').value = total;
+            row.querySelector('td:nth-child(10) input').value = total;
 
             calculateGrandTotal();
-        }
 
-        function calculateGrandTotal() {
-            const rows = document.querySelectorAll('#salesTable tr');
-            grandTotal = 0;
 
-            rows.forEach(row => {
-                const total = parseFloat(row.querySelector('td:nth-child(7) input').value) || 0;
-                grandTotal += total;
-            });
+            function calculateGrandTotal() {
+                const rows = document.querySelectorAll('#salesTable tr');
+                grandTotal = 0;
 
-            document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(10) input').value) || 0;
+                    grandTotal += total;
+                });
+
+                document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+                calculateGSTamount();
+            }
+
+            function calculateTotalWithGST() {
+                const rows = document.querySelectorAll('#salesTable tr');
+                TotalwithGST = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(11) input').value) || 0;
+                    TotalwithGST += total;
+                });
+
+                document.getElementById('grandTotalWithGST').innerText = TotalwithGST.toFixed(2);
+                calculateTotalGSTamountOnly();
+            }
+
+            function calculateGSTamount() {
+                const row = input.parentElement.parentElement;
+                const cgst = row.querySelector('td:nth-child(7) input').value;
+                const sgst = row.querySelector('td:nth-child(8) input').value;
+                const total = row.querySelector('td:nth-child(10) input').value;
+                const GSTamount = row.querySelector('td:nth-child(9) input');
+                const totalWithGST = row.querySelector('td:nth-child(11) input');
+
+                totalGrossGSTPersentage = parseFloat(cgst) + parseFloat(sgst); // need correction
+                gstAmount = ((totalGrossGSTPersentage / 100).toFixed(2) * parseFloat(total)).toFixed(2)
+                GSTamount.value = gstAmount;
+                totalWithGST.value = parseFloat(gstAmount) + parseFloat(total);
+                calculateTotalWithGST();
+            }
+
+            function calculateTotalGSTamountOnly() {
+                const rows = document.querySelectorAll('#salesTable tr');
+                TotalGSTamountOnly = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+                    TotalGSTamountOnly += total;
+                });
+
+                document.getElementById('TotalGSTamountOnly').innerText = TotalGSTamountOnly.toFixed(2);
+            }
+
         }
 
         window.onload = function () {
@@ -121,6 +245,53 @@
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
         };
+
+        const customerList = [
+            { name: "John Doe", phone: "9876543210" },
+            { name: "Jane Smith", phone: "9123456789" },
+            { name: "Michael Johnson", phone: "8899776655" },
+            { name: "Emily Davis", phone: "9012345678" }
+        ];
+
+        function searchCustomer(e) {
+            console.log(e.value);
+            let query = e.value;
+            console.log(e.name)
+
+            if(e.name == "customer"){
+                let resultList = customerList.filter((itm)=>{
+                    return itm.name.toLowerCase().includes(e.value)
+                })
+                console.log(resultList)
+                showCustomerSuggestions(resultList);
+            }
+            else{
+                let resultList = customerList.filter((itm)=>{
+                    return itm.phone.includes(e.value)
+                })
+                console.log(resultList)
+                showCustomerSuggestions(resultList);
+            }
+        }
+
+        function showCustomerSuggestions(list){
+            // Generate dropdown list
+            let suggestionsBox = document.getElementById("customerSuggestions");
+            suggestionsBox.innerHTML = list.map(customer =>
+                `<div>${customer.name}</div>`
+            ).join("");
+            let suggestionsBox2 = document.getElementById("phoneSuggestions");
+            suggestionsBox2.innerHTML = list.map(customer =>
+                `<div>${customer.phone}</div>`
+            ).join("");
+        }
+
+        document.addEventListener("click", function(event) {
+            if (!event.target.closest(".input-group")) {
+                document.getElementById("customerSuggestions").innerHTML = "";
+                document.getElementById("phoneSuggestions").innerHTML = "";
+            }
+        });
     </script>
 </body>
 
