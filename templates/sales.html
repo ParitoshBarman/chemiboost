@@ -44,6 +44,7 @@
             max-height: 150px;
             overflow-y: auto;
             width: 100%;
+            max-width: 600px;
         }
 
         .suggestions div {
@@ -61,14 +62,28 @@
             display: inline-block;
             width: 250px;
         }
-        .customersec{
+
+        .customersec {
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
             gap: 23px;
         }
-        .customersec input{
+
+        .customersec input {
             width: 100%;
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
         }
     </style>
 </head>
@@ -84,7 +99,7 @@
                 </div>
 
                 <!-- Form for Sales Details -->
-                <form method="POST" action="">
+                <form id="medicinelistdataform">
                     {% csrf_token %}
                     <div class="customersec">
                         <div class="form-group input-group">
@@ -145,6 +160,7 @@
             </div>
         </div>
     </main>
+    <input type="text" name="" id="" required>
 
     <!-- JavaScript -->
     <script>
@@ -157,16 +173,16 @@
 
             row.innerHTML = `
                 <td>${rowCount}</td>
-                <td><input type="text" name="item_name_${rowCount}" placeholder="Item Name"></td>
-                <td><input type="text" name="batch_${rowCount}" placeholder="Batch"></td>
-                <td><input type="number" name="quantity_${rowCount}" placeholder="Qty" onkeyup="updateTotal(this)" value="0"></td>
-                <td><input type="number" name="price_${rowCount}" placeholder="Price" onkeyup="updateTotal(this)" value="0"></td>
-                <td><input type="number" name="discount_${rowCount}" placeholder="Discount" onkeyup="updateTotal(this)" value="0"></td>
-                <td><input type="number" name="cgst_${rowCount}" placeholder="Cgst" onkeyup="updateTotal(this)" value="0"></td>
-                <td><input type="number" name="sgst_${rowCount}" placeholder="Sgst" onkeyup="updateTotal(this)" value="0"></td>
-                <td><input type="number" name="gstAmount_${rowCount}" placeholder="GST Amount" readonly value="0"></td>
-                <td><input type="number" name="total_${rowCount}" placeholder="Total" readonly value="0"></td>
-                <td><input type="number" name="totalwithgst_${rowCount}" placeholder="Total With GST" readonly value="0"></td>
+                <td><input type="text" id="item_name_${rowCount}" name="item_name_${rowCount}" placeholder="Item Name" oninput="showSuggestions(this, 'medicineSuggestions_${rowCount}')" required><div id="medicineSuggestions_${rowCount}" class="suggestions"></div></td>
+                <td><input type="text" id="batch_${rowCount}" name="batch_${rowCount}" placeholder="Batch" oninput="showSuggestions(this, 'medicineSuggestions_${rowCount}')" required></td>
+                <td><input type="number" name="quantity_${rowCount}" placeholder="Qty" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" id="price_${rowCount}" name="price_${rowCount}" placeholder="Price" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" name="discount_${rowCount}" placeholder="Discount" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" name="cgst_${rowCount}" placeholder="Cgst" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" name="sgst_${rowCount}" placeholder="Sgst" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" name="gstAmount_${rowCount}" placeholder="GST Amount" readonly value="0" required></td>
+                <td><input type="number" name="total_${rowCount}" placeholder="Total" readonly value="0" required></td>
+                <td><input type="number" name="totalwithgst_${rowCount}" placeholder="Total With GST" readonly value="0" required></td>
             `;
 
             table.appendChild(row);
@@ -247,51 +263,105 @@
         };
 
         const customerList = [
-            { name: "John Doe", phone: "9876543210" },
-            { name: "Jane Smith", phone: "9123456789" },
-            { name: "Michael Johnson", phone: "8899776655" },
-            { name: "Emily Davis", phone: "9012345678" }
+            { customerId: 1, name: "John Doe", phone: "9876543210" },
+            { customerId: 2, name: "Jane Smith", phone: "9123456789" },
+            { customerId: 3, name: "Michael Johnson", phone: "8899776655" },
+            { customerId: 4, name: "Emily Davis", phone: "9012345678" }
         ];
 
         function searchCustomer(e) {
-            console.log(e.value);
             let query = e.value;
-            console.log(e.name)
 
-            if(e.name == "customer"){
-                let resultList = customerList.filter((itm)=>{
-                    return itm.name.toLowerCase().includes(e.value)
+            if (e.name == "customer") {
+                let resultList = customerList.filter((itm) => {
+                    return itm.name.toLowerCase().includes(e.value.toLowerCase())
                 })
-                console.log(resultList)
                 showCustomerSuggestions(resultList);
             }
-            else{
-                let resultList = customerList.filter((itm)=>{
+            else {
+                let resultList = customerList.filter((itm) => {
                     return itm.phone.includes(e.value)
                 })
-                console.log(resultList)
                 showCustomerSuggestions(resultList);
             }
         }
 
-        function showCustomerSuggestions(list){
+        function showCustomerSuggestions(list) {
             // Generate dropdown list
             let suggestionsBox = document.getElementById("customerSuggestions");
             suggestionsBox.innerHTML = list.map(customer =>
-                `<div>${customer.name}</div>`
+                `<div onclick="customerFill(${customer.customerId})">${customer.name}</div>`
             ).join("");
             let suggestionsBox2 = document.getElementById("phoneSuggestions");
             suggestionsBox2.innerHTML = list.map(customer =>
-                `<div>${customer.phone}</div>`
+                `<div onclick="customerFill(${customer.customerId})">${customer.phone}</div>`
             ).join("");
         }
 
-        document.addEventListener("click", function(event) {
+        document.addEventListener("click", function (event) {
             if (!event.target.closest(".input-group")) {
                 document.getElementById("customerSuggestions").innerHTML = "";
                 document.getElementById("phoneSuggestions").innerHTML = "";
             }
+            document.querySelectorAll(".suggestions").forEach(suggestionBox => {
+                suggestionBox.innerHTML = "";
+            });
         });
+
+        function customerFill(customerId) {
+            customerList.forEach((itm) => {
+                if (itm.customerId == customerId) {
+                    document.getElementById("customer").value = itm.name;
+                    document.getElementById("phoneno").value = itm.phone;
+                    document.getElementById("customerSuggestions").innerHTML = "";
+                    document.getElementById("phoneSuggestions").innerHTML = "";
+                    return
+                }
+            });
+
+
+        }
+
+        document.getElementById("medicinelistdataform").addEventListener("submit", (e) => {
+            e.preventDefault();
+            console.log("working")
+            console.log(e.target)
+        });
+
+        const medicineStock = [
+            { item_name: "Paracetamol", batch: "A123", mrp: 50 },
+            { item_name: "Ibuprofen", batch: "B456", mrp: 70 },
+            { item_name: "Amoxicillin", batch: "C789", mrp: 100 },
+            { item_name: "Cetirizine", batch: "D234", mrp: 30 }
+        ];
+
+        function showSuggestions(input, suggestionBoxId) {
+            const query = input.value.toLowerCase();
+            suggestionsBox = document.getElementById(suggestionBoxId);
+            let filteredMedicines;
+            // Filter medicines based on user input
+            if (input.name.includes("item_name")) {
+                filteredMedicines = medicineStock.filter(med =>
+                    med.item_name.toLowerCase().includes(query)
+                );
+            }
+            else {
+                filteredMedicines = medicineStock.filter(med =>
+                    med.batch.toLowerCase().includes(query)
+                );
+            }
+            // Display suggestions
+            suggestionsBox.innerHTML = filteredMedicines.map(med =>
+                `<div onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}</div>`
+            ).join("");
+        }
+
+        function selectMedicine(batch, suggestionBoxId, itemName, batch, mrp) {
+            let rowNum = suggestionBoxId.split("_")[1];
+            document.getElementById(`item_name_${rowNum}`).value = itemName;
+            document.getElementById(`batch_${rowNum}`).value = batch;
+            document.getElementById(`price_${rowNum}`).value = mrp;
+        }
     </script>
 </body>
 

@@ -153,23 +153,26 @@
             width: 60px;
             /* background-color: red; */
         }
-        
+
         #edititemTable>tr :nth-child(8) input {
             width: 40px;
         }
-        
-        #edititemTable>tr :nth-child(4) input{
+
+        #edititemTable>tr :nth-child(4) input {
             width: 80px;
         }
+
         #edititemTable>tr :nth-child(5) input {
             width: 95px;
         }
+
         #edititemTable>tr :nth-child(10) input,
-        #edititemTable>tr :nth-child(11) input{
+        #edititemTable>tr :nth-child(11) input {
             width: 50px;
         }
+
         #edititemTable>tr :nth-child(12) input,
-        #edititemTable>tr :nth-child(13) input{
+        #edititemTable>tr :nth-child(13) input {
             width: 90px;
         }
 
@@ -177,7 +180,8 @@
         #edititemTable>tr :nth-child(3) input {
             width: 100px;
         }
-        #edititemTable td{
+
+        #edititemTable td {
             padding: 5px;
         }
 
@@ -212,6 +216,18 @@
         /* Handle on hover */
         #editInvoiceModal>div::-webkit-scrollbar-thumb:hover {
             background: red;
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
         }
     </style>
 
