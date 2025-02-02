@@ -112,3 +112,69 @@ class MedicineStock(models.Model):
     totalGSTamount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST amount")
     totalWithGST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total with GST")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+
+
+
+class Customer(models.Model):
+    customer_id = models.AutoField(primary_key=True)
+    ref_user = models.CharField(max_length=255, default="")
+    name = models.CharField(max_length=255, verbose_name="Customer Name")
+    phone_number = models.CharField(max_length=15, unique=True, verbose_name="Phone Number")
+    email = models.EmailField(unique=True, blank=True, null=True, verbose_name="Email Address")
+    address = models.TextField(blank=True, null=True, verbose_name="Address")
+    # gst_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="GST Number")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+
+
+class Billing(models.Model):
+    invoice_number = models.AutoField(primary_key=True)
+    ref_user = models.CharField(max_length=255, default="")
+    customer = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, related_name='purchases')
+    customer_name = models.CharField(max_length=255, verbose_name="Customer Name")
+    customer_contact = models.CharField(max_length=15, blank=True, null=True, verbose_name="Customer Contact")
+    customer_email = models.EmailField(blank=True, null=True, verbose_name="Customer Email")
+    customer_address = models.TextField(blank=True, null=True, verbose_name="Customer Address")
+
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total Amount")
+    total_GST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST Amount")
+    total_with_GST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total Amount with GST")
+
+    paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Paid Amount")
+    payment_method = models.CharField(max_length=50, choices=[
+        ('Cash', 'Cash'),
+        ('Card', 'Card'),
+        ('UPI', 'UPI'),
+        ('Net Banking', 'Net Banking')
+    ], verbose_name="Payment Method")
+
+    payment_status = models.CharField(max_length=50, choices=[
+        ('Pending', 'Pending'),
+        ('Overdue', 'Overdue'),
+        ('Completed', 'Completed')
+    ], default='Pending', verbose_name="Payment Status")
+
+    billing_date = models.DateField(auto_now_add=True, verbose_name="Billing Date")
+    billing_time = models.TimeField(auto_now_add=True, verbose_name="Billing Time")
+    last_update_date = models.DateField(auto_now=True, verbose_name="Last Update Date")
+    last_update_time = models.TimeField(auto_now=True, verbose_name="Last Update Time")
+
+
+class BillingItem(models.Model):
+    billing = models.ForeignKey(Billing, on_delete=models.CASCADE, related_name='items')
+    billingItemID = models.AutoField(primary_key=True)
+    ref_user = models.CharField(max_length=255, default="")
+    item_name = models.CharField(max_length=255, verbose_name="Item Name")
+    batch = models.CharField(max_length=100, verbose_name="Batch")
+    
+    qty = models.IntegerField(verbose_name="Quantity")
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Rate per Unit")
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Discount Amount")  # New Discount Field
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="CGST %")
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="SGST %")
+    total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Price")
+    total_GST_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST Amount")
+    total_with_GST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total with GST")
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+

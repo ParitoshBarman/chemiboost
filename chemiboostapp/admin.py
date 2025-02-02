@@ -1,5 +1,5 @@
 from django.contrib import admin
-from chemiboostapp.models import UserDetails, Purchase, Party, PurchaseItem, MedicineStock
+from chemiboostapp.models import UserDetails, Purchase, Party, PurchaseItem, MedicineStock, Customer, Billing, BillingItem
 from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
@@ -29,3 +29,23 @@ class MedicineStockV(ImportExportModelAdmin, admin.ModelAdmin):
     list_display=('company','item_name', 'qty', 'batch', 'created_at')
 
 admin.site.register(MedicineStock,MedicineStockV)
+
+
+
+# Customer Admin
+class CustomerV(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('customer_id', 'ref_user', 'name', 'phone_number', 'created_at')
+
+admin.site.register(Customer, CustomerV)
+
+# Billing Admin
+class BillingV(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('invoice_number', 'customer', 'ref_user', 'total_amount', 'total_GST', 'total_with_GST', 'billing_date', 'billing_time')
+
+admin.site.register(Billing, BillingV)
+
+# BillingItem Admin
+class BillingItemV(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('billingItemID', 'ref_user', 'item_name', 'batch', 'qty', 'price', 'discount', 'total_with_GST', 'created_at')
+
+admin.site.register(BillingItem, BillingItemV)

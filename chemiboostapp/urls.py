@@ -22,6 +22,7 @@ urlpatterns = urlpatterns = [
     path('edit-purchase/<int:purchase_id>/', views.edit_purchase, name="edit_purchase"),
     path("get_purchase_items/<int:purchase_id>", views.get_purchase_items, name="get_purchase_items"),
     path("purchase-history", views.purchase_list, name="purchase_list"),
+    path("create-bill", views.create_bill, name="create_bill"),
     path("create_purchase", views.create_purchase, name="create_purchase"),
     path("delete-purchase/<int:purchase_id>/", views.delete_purchase, name="delete_purchase"),
     path("resend-otp/", views.resend_otp, name="resend_otp"),
@@ -30,5 +31,8 @@ urlpatterns = urlpatterns = [
     path('deleteparty/<int:party_id>', views.delete_party, name='delete_party'),
     path("test", views.test, name='test'),
     path("download-invoice-pdf/<int:purchase_id>", views.download_invoice_pdf, name='download_invoice_pdf'),
+    path("download-bill-pdf/<int:invoice_id>", views.download_sales_invoice_pdf, name='download_sales_invoice_pdf'),
     path("generate_invoice_pdf/<int:purchase_id>", views.generate_invoice_pdf, name='generate_invoice_pdf'),
+    path("get_medicine_stock", views.get_medicine_stock, name='get_medicine_stock'),
+    path("get_customers", views.get_customers, name='get_customers'),
 ]

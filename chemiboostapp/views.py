@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from chemiboostapp import whatsappcloud
 from django.contrib.auth.decorators import login_required
-from chemiboostapp.models import Party, UserDetails, Purchase, PurchaseItem, MedicineStock
+from chemiboostapp.models import Party, UserDetails, Purchase, PurchaseItem, MedicineStock, Customer, Billing, BillingItem
 from django.core import serializers
 from datetime import datetime
 from django.core.paginator import Paginator
@@ -149,6 +149,110 @@ def resend_otp(request):
 
 def forgotpassword(request):
     return render(request, "forgotpassword.html")
+
+@csrf_exempt
+def create_bill(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            customer_name = data.get("customer_name", "")
+            customer_contact = data.get("customer_contact", "")
+            billing_date = data.get("billing_date")
+            total_amount = data.get("total_amount")
+            total_GST = data.get("total_GST")
+            total_with_GST = data.get("total_with_GST")
+            billing_items = data.get("billing_items", [])
+
+             # Ensure required fields are present
+            if not customer_contact or not customer_name:
+                return JsonResponse({"error": "Customer name and phone number are required"}, status=400)
+
+            if not request.user.is_authenticated:
+                return JsonResponse({"error": "User authentication required"}, status=401)
+            
+            # Process billing items and update stock
+            for item in billing_items:
+                batch = item["batch"]
+                qty_to_sell = item["qty"]
+                item_name = item["item_name"]
+
+                # Check if stock exists
+                try:
+                    stock = MedicineStock.objects.get(ref_user=request.user.username, batch=batch)
+
+                    if stock.qty < qty_to_sell:
+                        return JsonResponse({"error": f"Insufficient stock for batch {batch}, Name: {item_name}. Available: {stock.qty}, Required: {qty_to_sell}"}, status=400)
+
+
+                except MedicineStock.DoesNotExist:
+                    return JsonResponse({"error": f"Stock not found for batch {batch}, Name: {item_name}"}, status=404)
+
+
+
+            # Check if customer exists based on ref_user and phone_number, else create a new customer
+            customer, created = Customer.objects.get_or_create(
+                ref_user=request.user.username,  # Assuming ref_user is the logged-in user's username
+                phone_number=customer_contact,
+                defaults={"name": customer_name}
+            )
+
+
+            # Create a new billing record
+            billing = Billing.objects.create(
+                customer=customer,
+                ref_user=request.user.username,
+                customer_name=customer_name,
+                customer_contact=customer_contact,
+                total_amount=total_amount,
+                total_GST=total_GST,
+                total_with_GST=total_with_GST
+            )
+
+            # Save all billing items
+            for item in billing_items:
+                BillingItem.objects.create(
+                    billing=billing,
+                    ref_user=request.user.username,
+                    item_name=item["item_name"],
+                    batch=item["batch"],
+                    qty=item["qty"],
+                    price=item["price"],
+                    discount=item["discount"],
+                    cgst=item["cgst"],
+                    sgst=item["sgst"],
+                    total=item["total"],
+                    total_GST_amount=item["total_GST_amount"],
+                    total_with_GST=item["total_with_GST"]
+                )
+
+            # Process billing items and update stock
+            for item in billing_items:
+                batch = item["batch"]
+                qty_to_sell = item["qty"]
+
+                # Check if stock exists
+                try:
+                    stock = MedicineStock.objects.get(ref_user=request.user.username, batch=batch)
+
+                    if stock.qty < qty_to_sell:
+                        return JsonResponse({"error": f"Insufficient stock for batch {batch}. Available: {stock.qty}, Required: {qty_to_sell}"}, status=400)
+
+                    # Deduct the sold quantity
+                    stock.qty = F("qty") - qty_to_sell
+                    stock.save()
+
+                except MedicineStock.DoesNotExist:
+                    return JsonResponse({"error": f"Stock not found for batch {batch}"}, status=404)
+
+
+            return JsonResponse({"message": "Billing record created successfully", "invoice_number": billing.invoice_number}, status=201)
+        
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
 
 def purchase_list(request):
     return render(request, "PurchaseList.html")
@@ -602,6 +706,8 @@ def webhook(request):
     
 
 def download_invoice_pdf(request, purchase_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
     try:
         # Fetch the purchase details from the database
         purchase = Purchase.objects.get(purchase_invoice_number=purchase_id)
@@ -627,6 +733,37 @@ def download_invoice_pdf(request, purchase_id):
         return response
 
     except Purchase.DoesNotExist:
+        return HttpResponse("Invoice not found", status=404)
+
+
+def download_sales_invoice_pdf(request, invoice_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
+    try:
+        # Fetch the billing details from the database
+        billing = Billing.objects.get(invoice_number=invoice_id)
+        items = BillingItem.objects.filter(billing=billing)  # Get related billing items
+
+        # Prepare data for rendering
+        context = {
+            "invoice": billing,
+            "items": items,
+        }
+
+        # Load the HTML template
+        template = get_template("sales_invoice_template.html")  # Create this template
+        html = template.render(context)
+
+        # Create PDF response
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="SalesInvoice_{invoice_id}_{billing.customer_name}.pdf"'
+        pisa_status = pisa.CreatePDF(html, dest=response)
+
+        if pisa_status.err:
+            return HttpResponse("We had some errors generating the PDF", status=500)
+        return response
+
+    except Billing.DoesNotExist:
         return HttpResponse("Invoice not found", status=404)
     
 
@@ -675,3 +812,41 @@ def generate_invoice_pdf(request, purchase_id):
 
     except Exception as e:
         return None, str(e)
+    
+def get_medicine_stock(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
+    if request.method == "GET":
+        try:
+            stock_items = MedicineStock.objects.filter(ref_user=request.user.username).values(
+                "item_name", "batch", "mrp", "qty"
+            )
+            return JsonResponse(list(stock_items), safe=False, status=200)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+def get_customers(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
+    
+    if request.method == "GET":
+        try:
+            customers = Customer.objects.filter(ref_user=request.user.username).values(
+                "customer_id", "name", "phone_number"
+            )
+
+            customer_list = [
+                {"customerId": c["customer_id"], "name": c["name"], "phone": c["phone_number"]}
+                for c in customers
+            ]
+
+            return JsonResponse(customer_list, safe=False, status=200)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)

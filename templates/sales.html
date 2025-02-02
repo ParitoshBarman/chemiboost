@@ -160,8 +160,8 @@
             </div>
         </div>
     </main>
-    <input type="text" name="" id="" required>
 
+    <script src='{% static "js/common.js" %}'></script>
     <!-- JavaScript -->
     <script>
         let rowCount = 1;
@@ -262,12 +262,20 @@
             dateInput.value = today;
         };
 
-        const customerList = [
-            { customerId: 1, name: "John Doe", phone: "9876543210" },
-            { customerId: 2, name: "Jane Smith", phone: "9123456789" },
-            { customerId: 3, name: "Michael Johnson", phone: "8899776655" },
-            { customerId: 4, name: "Emily Davis", phone: "9012345678" }
-        ];
+        let customerList = [];
+        // Fetch customer data from API
+        async function fetchCustomers() {
+            try {
+                const response = await fetch("/get_customers"); // Update with the correct API endpoint
+                if (!response.ok) {
+                    throw new Error("Failed to fetch customers");
+                }
+                customerList = await response.json();
+            } catch (error) {
+                console.error("Error fetching customers:", error);
+            }
+        }
+        fetchCustomers();
 
         function searchCustomer(e) {
             let query = e.value;
@@ -322,18 +330,89 @@
 
         }
 
-        document.getElementById("medicinelistdataform").addEventListener("submit", (e) => {
+        document.getElementById("medicinelistdataform").addEventListener("submit", async (e) => {
             e.preventDefault();
-            console.log("working")
-            console.log(e.target)
+
+            let allItems = [];
+
+            let itemTableRow = document.querySelectorAll("#salesTable>tr");
+            let singleItem = {};
+            itemTableRow.forEach((row) => {
+                singleItem = {};
+                singleItem.item_name = row.querySelectorAll("td")[1].querySelector("input").value;
+                singleItem.batch = row.querySelectorAll("td")[2].querySelector("input").value;
+                singleItem.qty = row.querySelectorAll("td")[3].querySelector("input").value;
+                singleItem.price = row.querySelectorAll("td")[4].querySelector("input").value;
+                singleItem.discount = row.querySelectorAll("td")[5].querySelector("input").value;
+                singleItem.cgst = row.querySelectorAll("td")[6].querySelector("input").value;
+                singleItem.sgst = row.querySelectorAll("td")[7].querySelector("input").value;
+                singleItem.total_GST_amount = row.querySelectorAll("td")[8].querySelector("input").value;
+                singleItem.total = row.querySelectorAll("td")[9].querySelector("input").value;
+                singleItem.total_with_GST = row.querySelectorAll("td")[10].querySelector("input").value;
+
+                allItems.push(singleItem);
+
+            })
+
+            let dataObj = {};
+            dataObj.customer_name = document.getElementById("customer").value;
+            dataObj.customer_contact = document.getElementById("phoneno").value;
+            dataObj.billing_date = document.getElementById("dateInput").value;
+
+            dataObj.total_amount = document.getElementById("grandTotal").textContent;
+            dataObj.total_GST = document.getElementById("TotalGSTamountOnly").textContent;
+            dataObj.total_with_GST = document.getElementById("grandTotalWithGST").textContent;
+            dataObj.billing_items = allItems
+
+            console.log(dataObj);
+            try {
+                const response = await fetch(`/create-bill`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(dataObj)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const table = document.getElementById('salesTable');
+                    // table.innerHTML = null;
+                    // document.getElementById("customer").value = "";
+                    // document.getElementById("phoneno").value = "";
+                    alert(result.message);
+
+                    // Example Usage
+                    downloadFile(`download-bill-pdf/${result.invoice_number}`, `${dataObj.customer_name}_${result.invoice_number}_invoice.pdf`);
+
+                } else {
+                    console.error('Error adding create_purchase:', result);
+                    alert(result.error);
+                }
+            } catch (error) {
+                // localStorage.setItem("offlineAddParty",JSON.stringify())
+                console.error('Request failed:', error);
+            }
         });
 
-        const medicineStock = [
-            { item_name: "Paracetamol", batch: "A123", mrp: 50 },
-            { item_name: "Ibuprofen", batch: "B456", mrp: 70 },
-            { item_name: "Amoxicillin", batch: "C789", mrp: 100 },
-            { item_name: "Cetirizine", batch: "D234", mrp: 30 }
-        ];
+        let medicineStock = [];
+        // Fetch medicine stock from the server
+        async function fetchMedicineStock() {
+            try {
+                const response = await fetch("/get_medicine_stock");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch medicine stock");
+                }
+                medicineStock = await response.json();
+            } catch (error) {
+                console.error("Error fetching medicine stock:", error);
+            }
+        }
+
+        // Call the function to fetch stock on page load
+        fetchMedicineStock();
+
 
         function showSuggestions(input, suggestionBoxId) {
             const query = input.value.toLowerCase();
@@ -351,9 +430,15 @@
                 );
             }
             // Display suggestions
-            suggestionsBox.innerHTML = filteredMedicines.map(med =>
-                `<div onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}</div>`
-            ).join("");
+            suggestionsBox.innerHTML = filteredMedicines.map((med) => {
+                // if(med.qty<50){
+                //     return `<div style="background-color: red;" onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}</div>`
+                // }
+                // else if(med.qty<100){
+                //     return `<div style="background-color: yellow;color:black;" onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}</div>`
+                // }
+                return `<div onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}</div>`
+            }).join("");
         }
 
         function selectMedicine(batch, suggestionBoxId, itemName, batch, mrp) {

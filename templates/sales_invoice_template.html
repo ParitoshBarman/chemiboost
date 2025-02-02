@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            margin: 0;
+        }
+        .header, .footer {
+            text-align: center;
+            font-weight: bold;
+        }
+        .customer-and-saler-info, .invoice-info {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .customer-and-saler-info td, .invoice-info td {
+            vertical-align: top;
+        }
+        .border-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .border-table th, .border-table td {
+            border: 1px solid black;
+            padding-top: 2px;
+            text-align: center;
+        }
+        .border-table th {
+            font-weight: bold;
+        }
+        .total-section {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">SALES INVOICE</div>
+
+    <table class="customer-and-saler-info">
+        <tr>
+            <td><strong><h2>JD Medical</h2></strong></td>
+            <td style="text-align: right;"><strong>Customer Name:</strong> {{ invoice.customer_name }}</td>
+        </tr>
+        <tr>
+            <td><strong><h3>Gossairhat Bandar, Sitalkuchi, Coochbeha, 736172</h3></strong></td>
+            <td style="text-align: right;"><strong>Contact:</strong> {{ invoice.customer_contact }}</td>
+        </tr>
+        <tr>
+            <td><strong>Contact:</strong> 8172030555</td>
+        </tr>
+        <tr>
+            <td><strong>Email:</strong> None</td>
+        </tr>
+    </table>
+
+    <table class="invoice-info">
+        <tr>
+            <td><strong>Invoice No:</strong> {{ invoice.invoice_number }}</td>
+            <td><strong>Invoice Date:</strong> {{ invoice.billing_date|date:"d-m-Y" }}</td>
+            <td><strong>Updated On:</strong> {{ invoice.last_update_date }} {{ invoice.last_update_time }}</td>
+        </tr>
+    </table>
+
+    <table class="border-table">
+        <tr>
+            <th>Item</th>
+            <th>Batch</th>
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>Discount%</th>
+            <th>Total</th>
+            <th>CGST%</th>
+            <th>SGST%</th>
+            <th>GST Amount</th>
+            <th>Total With GST</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.item_name }}</td>
+            <td>{{ item.batch }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.price }}</td>
+            <td>{{ item.discount }}</td>
+            <td>{{ item.total }}</td>
+            <td>{{ item.cgst }}</td>
+            <td>{{ item.sgst }}</td>
+            <td>{{ item.total_GST_amount }}</td>
+            <td>{{ item.total_with_GST }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="total-section">
+        <p><strong>Total Amount:</strong> Rs.{{ invoice.total_amount }}</p>
+        <p><strong>GST Total:</strong> Rs.{{ invoice.total_GST }}</p>
+        <p><strong>Final Amount (With GST):</strong> Rs.{{ invoice.total_with_GST }}</p>
+    </div>
+
+    <div class="footer">Thank you for your business!</div>
+
+</body>
+</html>
