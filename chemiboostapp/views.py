@@ -14,12 +14,18 @@ from datetime import datetime
 from django.core.paginator import Paginator
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-from django.http import FileResponse
-from io import BytesIO
 import threading
 from chemiboostapp import extrafunction
+from django.db.models import Q
 
 mytoken = "hjhhkjhjhkjhjkghghjgjhghg"
+
+# Helper function to convert DD-MM-YYYY to YYYY-MM-DD for Django filtering
+def convert_to_iso_date(date_str):
+    try:
+        return datetime.strptime(date_str, "%d-%m-%Y").strftime("%Y-%m-%d")
+    except ValueError:
+        return None  # Ignore if not a valid date format
 
 # Create your views here.
 def index(request):
@@ -252,6 +258,43 @@ def create_bill(request):
     
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+def get_billing_data(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
+
+    query = request.GET.get("query", "").lower()
+    status_filter = request.GET.get("status", "all").lower()
+
+    # Filter by user
+    bills = Billing.objects.filter(ref_user=request.user.username)
+    print(bills)
+
+    # Apply search filter (customer name, invoice number, or date)
+    if query:
+        query_date = convert_to_iso_date(query)  # Convert user input to YYYY-MM-DD (if valid)
+        
+        # Use Q objects to apply OR conditions
+        bills = bills.filter(
+            # Q(customer_contact__icontains=query) | 
+            Q(invoice_number__icontains=query) | 
+            Q(customer_name__icontains=query) |
+            (Q(billing_date=query_date) if query_date else Q())  # Only apply if date is valid
+        )
+
+    # Apply status filter
+    if status_filter != "all":
+        bills = bills.filter(payment_status__iexact=status_filter)
+
+    # Format response data
+    data = list(bills.values("invoice_number", "customer_name","customer_contact", "billing_date", "total_amount", "payment_status"))
+    for bill in data:
+        bill["customerName"] = bill.pop("customer_name")
+        bill["customer_contact"] = bill.pop("customer_contact")
+        bill["billDate"] = bill.pop("billing_date").strftime("%d-%m-%Y")  # Convert to DD-MM-YYYY
+        bill["totalAmount"] = bill.pop("total_amount")
+        bill["status"] = bill.pop("payment_status").lower()
+
+    return JsonResponse(data, safe=False, status=200)
 
 
 def purchase_list(request):

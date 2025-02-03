@@ -139,9 +139,8 @@
                 </div>
 
                 <div class="filter-bar">
-                    <input type="text" id="searchInput" placeholder="Search by Bill Number, Customer Name, or Date..."
-                        oninput="filterBills()">
-                    <select id="statusFilter" onchange="filterBills()">
+                    <input type="text" id="searchInput" placeholder="Search by Bill Number, Customer Name, Phone or Date...">
+                    <select id="statusFilter">
                         <option value="all">All</option>
                         <option value="paid">Paid</option>
                         <option value="pending">Pending</option>
@@ -152,8 +151,9 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Bill Number</th>
+                            <th>Invoice Number</th>
                             <th>Customer Name</th>
+                            <th>Customer Phone</th>
                             <th>Bill Date</th>
                             <th>Total Amount</th>
                             <th>Status</th>
@@ -169,58 +169,74 @@
     </main>
 
     <script>
-        // Sample data (replace with backend data)
-        const bills = [
-            { billNumber: 'B001', customerName: 'John Doe', billDate: '2025-01-05', totalAmount: 5000, status: 'paid' },
-            { billNumber: 'B002', customerName: 'Jane Smith', billDate: '2025-01-10', totalAmount: 3000, status: 'pending' },
-            { billNumber: 'B003', customerName: 'Michael Brown', billDate: '2024-12-30', totalAmount: 7000, status: 'overdue' },
-            { billNumber: 'B004', customerName: 'Emily Davis', billDate: '2025-01-08', totalAmount: 4500, status: 'paid' },
-            { billNumber: 'B005', customerName: 'Paul Johnson', billDate: '2024-12-28', totalAmount: 6500, status: 'overdue' }
-        ];
+        // Debounce function to optimize filtering
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), delay);
+            };
+        }
 
-        // Function to render bill data
-        function renderBills(filteredBills) {
-            const tableBody = document.getElementById('billTable');
-            tableBody.innerHTML = '';
+        // Fetch billing data from backend with filtering
+        async function fetchBillingData(query = "", statusFilter = "all") {
+            try {
+                const response = await fetch(`/get_billing_data?query=${query}&status=${statusFilter}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" }
+                });
 
-            filteredBills.forEach(bill => {
-                const row = document.createElement('tr');
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const bills = await response.json();
+                // console.log("Billing Data okkkk:", bills); // Debugging output
+                renderBills(bills); // Render filtered data
+            } catch (error) {
+                console.error("Error fetching billing data:", error);
+            }
+        }
+
+        // Render bill data in the table
+        function renderBills(bills) {
+            const tableBody = document.getElementById("billTable");
+            tableBody.innerHTML = "";
+
+            bills.forEach(bill => {
+                const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td>${bill.billNumber}</td>
-                    <td>${bill.customerName}</td>
-                    <td>${bill.billDate}</td>
-                    <td class="highlight">₹${bill.totalAmount.toLocaleString()}</td>
-                    <td>
-                        <span class="status ${bill.status}">${bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}</span>
-                    </td>
-                    <td><a class="view-link" href="/bills/${bill.billNumber}">View</a></td>
-                `;
+            <td>${bill.invoice_number}</td>
+            <td>${bill.customerName}</td>
+            <td>${bill.customer_contact}</td>
+            <td>${bill.billDate}</td>
+            <td class="highlight">₹${bill.totalAmount.toLocaleString()}</td>
+            <td>
+                <span class="status ${bill.status}">${bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}</span>
+            </td>
+            <td><button class="view-link" onclick="showItems(${bill.invoice_number})">View</button></td>
+        `;
                 tableBody.appendChild(row);
             });
         }
 
-        // Function to filter bills by search input and status
-        function filterBills() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
+        // Debounced filter function
+        const debouncedFilter = debounce(() => {
+            // console.log("Calllll deeee")
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const statusFilter = document.getElementById("statusFilter").value;
+            fetchBillingData(query, statusFilter);
+        }, 1000); // 1000ms delay
 
-            const filteredBills = bills.filter(bill => {
-                const matchesSearch =
-                    bill.billNumber.toLowerCase().includes(query) ||
-                    bill.customerName.toLowerCase().includes(query) ||
-                    bill.billDate.includes(query);
+        // Event listeners for search and filter
+        document.getElementById("searchInput").addEventListener("input", debouncedFilter);
+        document.getElementById("statusFilter").addEventListener("change", debouncedFilter);
 
-                const matchesStatus =
-                    statusFilter === 'all' || bill.status === statusFilter;
+        // Initial fetch on page load
+        fetchBillingData();
 
-                return matchesSearch && matchesStatus;
-            });
 
-            renderBills(filteredBills);
+        function showItems(invoiceId){
+            console.log(invoiceId)
         }
-
-        // Render all bills on page load
-        renderBills(bills);
     </script>
 </body>
 

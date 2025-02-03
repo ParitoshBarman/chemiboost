@@ -23,6 +23,7 @@ urlpatterns = urlpatterns = [
     path("get_purchase_items/<int:purchase_id>", views.get_purchase_items, name="get_purchase_items"),
     path("purchase-history", views.purchase_list, name="purchase_list"),
     path("create-bill", views.create_bill, name="create_bill"),
+    path("get_billing_data", views.get_billing_data, name="get_billing_data"),
     path("create_purchase", views.create_purchase, name="create_purchase"),
     path("delete-purchase/<int:purchase_id>/", views.delete_purchase, name="delete_purchase"),
     path("resend-otp/", views.resend_otp, name="resend_otp"),
