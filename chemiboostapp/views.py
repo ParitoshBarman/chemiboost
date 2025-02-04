@@ -264,38 +264,48 @@ def get_billing_data(request):
 
     query = request.GET.get("query", "").lower()
     status_filter = request.GET.get("status", "all").lower()
+    page = int(request.GET.get("page", 1))  # Default to page 1
+    per_page = int(request.GET.get("per_page", 10))  # Default 10 items per page
 
     # Filter by user
     bills = Billing.objects.filter(ref_user=request.user.username)
-    print(bills)
 
     # Apply search filter (customer name, invoice number, or date)
     if query:
-        query_date = convert_to_iso_date(query)  # Convert user input to YYYY-MM-DD (if valid)
-        
-        # Use Q objects to apply OR conditions
+        query_date = convert_to_iso_date(query)  # Convert dd-mm-yyyy to YYYY-MM-DD
         bills = bills.filter(
-            # Q(customer_contact__icontains=query) | 
-            Q(invoice_number__icontains=query) | 
-            Q(customer_name__icontains=query) |
-            (Q(billing_date=query_date) if query_date else Q())  # Only apply if date is valid
+            Q(invoice_number__icontains=query) |  # Search by Invoice Number
+            Q(customer_name__icontains=query) |  # Search by Customer Name
+            (Q(billing_date=query_date) if query_date else Q())  # Search by Date
         )
 
     # Apply status filter
     if status_filter != "all":
         bills = bills.filter(payment_status__iexact=status_filter)
 
+    # Paginate results
+    paginator = Paginator(bills, per_page)
+    paginated_bills = paginator.get_page(page)
+
     # Format response data
-    data = list(bills.values("invoice_number", "customer_name","customer_contact", "billing_date", "total_amount", "payment_status"))
+    data = list(paginated_bills.object_list.values(
+        "invoice_number", "customer_name", "customer_contact", "billing_date", "total_amount", "payment_status"
+    ))
+
     for bill in data:
         bill["customerName"] = bill.pop("customer_name")
         bill["customer_contact"] = bill.pop("customer_contact")
-        bill["billDate"] = bill.pop("billing_date").strftime("%d-%m-%Y")  # Convert to DD-MM-YYYY
+        bill["billDate"] = bill.pop("billing_date").strftime("%d-%m-%Y")  # Format date as dd-mm-yyyy
         bill["totalAmount"] = bill.pop("total_amount")
         bill["status"] = bill.pop("payment_status").lower()
 
-    return JsonResponse(data, safe=False, status=200)
-
+    return JsonResponse({
+        "bills": data,
+        "total_pages": paginator.num_pages,
+        "current_page": paginated_bills.number,
+        "has_next": paginated_bills.has_next(),
+        "has_previous": paginated_bills.has_previous(),
+    }, safe=False, status=200)
 
 def purchase_list(request):
     return render(request, "PurchaseList.html")
