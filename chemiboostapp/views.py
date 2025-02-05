@@ -17,6 +17,7 @@ from xhtml2pdf import pisa
 import threading
 from chemiboostapp import extrafunction
 from django.db.models import Q
+from django.db.models import Prefetch
 
 mytoken = "hjhhkjhjhkjhjkghghjgjhghg"
 
@@ -306,6 +307,59 @@ def get_billing_data(request):
         "has_next": paginated_bills.has_next(),
         "has_previous": paginated_bills.has_previous(),
     }, safe=False, status=200)
+
+
+@csrf_exempt
+def edit_bill(request):
+    print("Work.......")
+    print("")
+    return JsonResponse({"message": "Working broooo...."})
+
+def get_bill_details(request, invoice_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
+
+    try:
+        # Fetch the purchase details
+        billingData = get_object_or_404(Billing, invoice_number=invoice_id, ref_user=request.user.username)
+
+        # Fetch all items associated with this purchase
+        items = BillingItem.objects.filter(billing=billingData)
+
+        # Structure the response data
+        billing_data = {
+            "invoice_number": billingData.invoice_number,
+            "customer_name": billingData.customer_name,
+            "customer_contact": billingData.customer_contact,
+            "total_amount": billingData.total_amount,
+            "total_GST": billingData.total_GST,
+            "total_with_GST": billingData.total_with_GST,
+            "paid_amount": billingData.paid_amount,
+            "payment_method": billingData.payment_method,
+            "payment_status": billingData.payment_status,  # Convert Decimal to string for JSON compatibility
+            "billing_date": billingData.billing_date.strftime("%Y-%m-%d"),
+            "items": [
+                {
+                    "item_name": item.item_name,
+                    "batch": item.batch,
+                    "qty": item.qty,
+                    "price": item.price,
+                    "discount": item.discount,
+                    "cgst": item.cgst,
+                    "sgst": item.sgst,
+                    "total": item.total,
+                    "total_GST_amount": item.total_GST_amount,
+                    "total_with_GST": item.total_with_GST,
+                }
+                for item in items
+            ],
+        }
+
+        return JsonResponse({"success": True, "bill": billing_data})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
+
 
 def purchase_list(request):
     return render(request, "PurchaseList.html")

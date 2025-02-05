@@ -126,6 +126,141 @@
         .view-link:hover {
             text-decoration: underline;
         }
+
+        #editInvoiceModal>div {
+            overflow-x: scroll;
+
+        }
+
+        #editInvoiceModal>div::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+        }
+
+
+        /* Track */
+        #editInvoiceModal>div::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        /* Handle */
+        #editInvoiceModal>div::-webkit-scrollbar-thumb {
+            background: rgba(255, 0, 0, 0.574);
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Handle on hover */
+        #editInvoiceModal>div::-webkit-scrollbar-thumb:hover {
+            background: red;
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        #salesTable>tr>td:nth-child(2)>input {
+            width: 130px;
+        }
+
+        #salesTable>tr>td:nth-child(3)>input {
+            width: 90px;
+        }
+
+        #salesTable>tr>td:nth-child(9)>input {
+            width: 70px;
+        }
+
+        #salesTable>tr>td:nth-child(10)>input,
+        #salesTable>tr>td:nth-child(11)>input {
+            width: 110px;
+        }
+
+        #salesTable>tr>td:nth-child(4)>input,
+        #salesTable>tr>td:nth-child(5)>input,
+        #salesTable>tr>td:nth-child(6)>input,
+        #salesTable>tr>td:nth-child(7)>input,
+        #salesTable>tr>td:nth-child(8)>input {
+            width: 60px;
+        }
+
+
+
+
+        #salesTable td {
+            padding: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: absolute;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            min-height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            min-width: 1075px;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* for drpdown */
+        .suggestions {
+            position: absolute;
+            background: rgb(26 34 44);
+            /* border: 1px solid #ccc; */
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .suggestions div {
+            padding: 8px;
+            cursor: pointer;
+            border: 1px solid gray;
+        }
+
+        .suggestions div:hover {
+            background: rgb(82, 98, 117);
+        }
+
+        .customersec {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 23px;
+        }
+
+        .customersec input {
+            width: 100%;
+        }
+
+        .form-group {
+            flex-direction: column;
+        }
     </style>
 </head>
 
@@ -159,6 +294,7 @@
                             <th>Total Amount</th>
                             <th>Status</th>
                             <th>Action</th>
+                            <th>Payment</th>
                         </tr>
                     </thead>
                     <tbody id="billTable">
@@ -171,6 +307,74 @@
                     <button id="nextPage">Next</button>
                 </div>
 
+                <div id="editInvoiceModal" class="modal">
+                    <div class="modal-content" style="background-color: rgb(36 48 63);">
+                        <span class="close" onclick="closeEditModal()"
+                            style="font-size: 35px;margin: -16px 0 0 15px;color: white;">&times;</span>
+                        <div class="header">
+                            <h1>Edit Billing Invoice</h1>
+                            <p><strong>Date:</strong> <input type="date" id="dateInput"></p>
+                        </div>
+
+                        <form>
+                            <div class="customersec">
+                                <div class="form-group input-group">
+                                    <label for="customer">Customer Name:</label>
+                                    <input type="text" id="customer" name="customer" placeholder="Enter Customer Name"
+                                        onkeyup="searchCustomer(this)">
+                                    <div id="customerSuggestions" class="suggestions" style="position: relative;"></div>
+                                </div>
+                                <div class="form-group input-group">
+                                    <label for="phoneno">Phone No:</label>
+                                    <input type="text" id="phoneno" placeholder="Enter Phone Number"
+                                        onkeyup="searchCustomer(this)">
+                                    <div id="phoneSuggestions" class="suggestions" style="position: relative;"></div>
+                                </div>
+                            </div>
+
+
+                        </form>
+                        <form action="#">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>SN</th>
+                                        <th>Item Name</th>
+                                        <th>Batch</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Discount (%)</th>
+                                        <th>Cgst (%)</th>
+                                        <th>Sgst (%)</th>
+                                        <th>GST Amount</th>
+                                        <th>Total</th>
+                                        <th>Total With GST</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesTable">
+                                    <!-- Rows will be dynamically added here -->
+                                </tbody>
+                            </table>
+                        </form>
+
+                        <div class="footer">
+                            <button type="button" onclick="addRow()">Add Item</button>
+                            <button type="button" id="editbill_invoice_number" onclick="uploadEditData()">Save
+                                Invoice</button>
+                        </div>
+                        <div class="summary">
+                            <p><strong>Grand Total: ₹</strong><span id="grandTotal">0.00</span></p>
+                        </div>
+                        <div class="summary">
+                            <p><strong>GST Total: ₹</strong><span id="TotalGSTamountOnly">0.00</span></p>
+                        </div>
+                        <div class="summary">
+                            <p><strong>Grand Total with GST: ₹</strong><span id="grandTotalWithGST">0.00</span></p>
+                        </div>
+
+                    </div>
+
+                </div>
             </div>
         </div>
     </main>
@@ -224,7 +428,7 @@
             <td>
                 <span class="status ${bill.status}">${bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}</span>
             </td>
-            <td><button class="view-link" onclick="showItems(${bill.invoice_number})">View</button></td>
+            <td><button class="view-link" onclick="editInvoice(${bill.invoice_number})">View</button></td>
         `;
                 tableBody.appendChild(row);
             });
@@ -277,8 +481,341 @@
         });
 
 
-        function showItems(invoiceId) {
-            console.log(invoiceId)
+
+
+        // Open Edit Modal with Existing Data
+        function editInvoice(invoice_number) {
+            fetch(`/get-bill-details/${invoice_number}/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    editingInvoiceId = invoice_number;
+
+                    document.getElementById("customer").value = data.bill.customer_name;
+                    document.getElementById("phoneno").value = data.bill.customer_contact;
+                    document.getElementById("dateInput").value = data.bill.billing_date;
+                    document.getElementById("grandTotal").textContent = data.bill.total_amount;
+                    document.getElementById("TotalGSTamountOnly").textContent = data.bill.total_GST;
+                    document.getElementById("grandTotalWithGST").textContent = data.bill.total_with_GST;
+                    document.getElementById("editbill_invoice_number").setAttribute("data-bill_invoice_number", data.bill.invoice_number);
+
+                    const table = document.getElementById('salesTable');
+                    table.innerHTML = "";
+
+                    data.bill.items.forEach((itm, indx) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                <td>${indx + 1}</td>
+                <td><input type="text" id="item_name_${indx+1}" name="item_name_${indx+1}" value="${itm.item_name}" oninput="showSuggestions(this, 'medicineSuggestions_${indx+1}')" placeholder="Item Name"><div id="medicineSuggestions_${indx+1}" class="suggestions"></div></td>
+                <td><input type="text" id="batch_${indx+1}" name="batch_${indx+1}" value="${itm.batch}" oninput="showSuggestions(this, 'medicineSuggestions_${indx+1}')" placeholder="Batch"></td>
+                <td><input type="number" value="${itm.qty}" placeholder="Qty" onkeyup="updateTotal(this)"></td>
+                <td><input type="number" value="${itm.price}" placeholder="Price" onkeyup="updateTotal(this)"></td>
+                <td><input type="number" value="${itm.discount}" placeholder="Discount" onkeyup="updateTotal(this)"></td>
+                <td><input type="number" placeholder="Cgst" onkeyup="updateTotal(this)" value="${itm.cgst}"></td>
+                <td><input type="number" placeholder="Sgst" onkeyup="updateTotal(this)" value="${itm.sgst}"></td>
+                <td><input type="number" placeholder="GST Amount" value="${itm.total_GST_amount}" readonly></td>
+                <td><input type="number" placeholder="Total" value="${itm.total}" readonly></td>
+                <td><input type="number" placeholder="Total With GST" value="${itm.total_with_GST}" readonly></td>
+            `;
+
+                        table.appendChild(row);
+                    })
+
+
+                    document.getElementById("editInvoiceModal").style.display = "block";
+                })
+                .catch(error => console.error("Error fetching invoice data:", error));
+        }
+
+
+        // Close Edit Modal
+        function closeEditModal() {
+            document.getElementById("editInvoiceModal").style.display = "none";
+        }
+
+
+        // autofill customer
+
+        let customerList = [];
+        // Fetch customer data from API
+        async function fetchCustomers() {
+            try {
+                const response = await fetch("/get_customers"); // Update with the correct API endpoint
+                if (!response.ok) {
+                    throw new Error("Failed to fetch customers");
+                }
+                customerList = await response.json();
+            } catch (error) {
+                console.error("Error fetching customers:", error);
+            }
+        }
+        fetchCustomers();
+
+        function searchCustomer(e) {
+            let query = e.value;
+
+            if (e.name == "customer") {
+                let resultList = customerList.filter((itm) => {
+                    return itm.name.toLowerCase().includes(e.value.toLowerCase())
+                })
+                showCustomerSuggestions(resultList);
+            }
+            else {
+                let resultList = customerList.filter((itm) => {
+                    return itm.phone.includes(e.value)
+                })
+                showCustomerSuggestions(resultList);
+            }
+        }
+
+        // show customer in dropdown
+        function showCustomerSuggestions(list) {
+            // Generate dropdown list
+            let suggestionsBox = document.getElementById("customerSuggestions");
+            suggestionsBox.innerHTML = list.map(customer =>
+                `<div onclick="customerFill(${customer.customerId})">${customer.name}</div>`
+            ).join("");
+            let suggestionsBox2 = document.getElementById("phoneSuggestions");
+            suggestionsBox2.innerHTML = list.map(customer =>
+                `<div onclick="customerFill(${customer.customerId})">${customer.phone}</div>`
+            ).join("");
+        }
+
+        function customerFill(customerId) {
+            customerList.forEach((itm) => {
+                if (itm.customerId == customerId) {
+                    document.getElementById("customer").value = itm.name;
+                    document.getElementById("phoneno").value = itm.phone;
+                    document.getElementById("customerSuggestions").innerHTML = "";
+                    document.getElementById("phoneSuggestions").innerHTML = "";
+                    return
+                }
+            });
+
+
+        }
+        // hide by clicking outside
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".input-group")) {
+                document.getElementById("customerSuggestions").innerHTML = "";
+                document.getElementById("phoneSuggestions").innerHTML = "";
+            }
+            document.querySelectorAll(".suggestions").forEach(suggestionBox => {
+                suggestionBox.innerHTML = "";
+            });
+        });
+
+
+        // add row
+        function addRow() {
+            let rowCount = document.getElementById('salesTable').childElementCount + 1;
+            const table = document.getElementById('salesTable');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${rowCount}</td>
+                <td><input type="text" id="item_name_${rowCount}" name="item_name_${rowCount}" placeholder="Item Name" oninput="showSuggestions(this, 'medicineSuggestions_${rowCount}')" required><div id="medicineSuggestions_${rowCount}" class="suggestions"></div></td>
+                <td><input type="text" id="batch_${rowCount}" name="batch_${rowCount}" placeholder="Batch" oninput="showSuggestions(this, 'medicineSuggestions_${rowCount}')" required></td>
+                <td><input type="number" name="quantity_${rowCount}" placeholder="Qty" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" id="price_${rowCount}" name="price_${rowCount}" placeholder="Price" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" name="discount_${rowCount}" placeholder="Discount" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" name="cgst_${rowCount}" placeholder="Cgst" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" name="sgst_${rowCount}" placeholder="Sgst" onkeyup="updateTotal(this)" value="0" required></td>
+                <td><input type="number" name="gstAmount_${rowCount}" placeholder="GST Amount" readonly value="0" required></td>
+                <td><input type="number" name="total_${rowCount}" placeholder="Total" readonly value="0" required></td>
+                <td><input type="number" name="totalwithgst_${rowCount}" placeholder="Total With GST" readonly value="0" required></td>
+            `;
+
+            table.appendChild(row);
+            rowCount++;
+        }
+
+        let medicineStock = [];
+        // Fetch medicine stock from the server
+        async function fetchMedicineStock() {
+            try {
+                const response = await fetch("/get_medicine_stock");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch medicine stock");
+                }
+                medicineStock = await response.json();
+            } catch (error) {
+                console.error("Error fetching medicine stock:", error);
+            }
+        }
+
+        // Call the function to fetch stock on page load
+        fetchMedicineStock();
+
+
+        // showSuggestions medicine in table
+        function showSuggestions(input, suggestionBoxId) {
+            const query = input.value.toLowerCase();
+            suggestionsBox = document.getElementById(suggestionBoxId);
+            let filteredMedicines;
+            // Filter medicines based on user input
+            if (input.name.includes("item_name")) {
+                filteredMedicines = medicineStock.filter(med =>
+                    med.item_name.toLowerCase().includes(query)
+                );
+            }
+            else {
+                filteredMedicines = medicineStock.filter(med =>
+                    med.batch.toLowerCase().includes(query)
+                );
+            }
+            // Display suggestions
+            suggestionsBox.innerHTML = filteredMedicines.map((med) => {
+                // if(med.qty<50){
+                //     return `<div style="background-color: red;" onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}</div>`
+                // }
+                // else if(med.qty<100){
+                //     return `<div style="background-color: yellow;color:black;" onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}</div>`
+                // }
+                return `<div onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}</div>`
+            }).join("");
+        }
+
+        // medicine auto fill to table
+        function selectMedicine(batch, suggestionBoxId, itemName, batch, mrp) {
+            let rowNum = suggestionBoxId.split("_")[1];
+            document.getElementById(`item_name_${rowNum}`).value = itemName;
+            document.getElementById(`batch_${rowNum}`).value = batch;
+            document.getElementById(`price_${rowNum}`).value = mrp;
+        }
+
+
+        // price calculation by filling
+        function updateTotal(input) {
+            const row = input.parentElement.parentElement;
+            const qty = parseFloat(row.querySelector('td:nth-child(4) input').value) || 0;
+            const price = parseFloat(row.querySelector('td:nth-child(5) input').value) || 0;
+            const discount = parseFloat(row.querySelector('td:nth-child(6) input').value) || 0;
+
+            const total = (qty * price * (1 - discount / 100)).toFixed(2);
+            row.querySelector('td:nth-child(10) input').value = total;
+
+            calculateGrandTotal();
+
+
+            function calculateGrandTotal() {
+                const rows = document.querySelectorAll('#salesTable tr');
+                grandTotal = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(10) input').value) || 0;
+                    grandTotal += total;
+                });
+
+                document.getElementById('grandTotal').innerText = grandTotal.toFixed(2);
+                calculateGSTamount();
+            }
+
+            function calculateTotalWithGST() {
+                const rows = document.querySelectorAll('#salesTable tr');
+                TotalwithGST = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(11) input').value) || 0;
+                    TotalwithGST += total;
+                });
+
+                document.getElementById('grandTotalWithGST').innerText = TotalwithGST.toFixed(2);
+                calculateTotalGSTamountOnly();
+            }
+
+            function calculateGSTamount() {
+                const row = input.parentElement.parentElement;
+                const cgst = row.querySelector('td:nth-child(7) input').value;
+                const sgst = row.querySelector('td:nth-child(8) input').value;
+                const total = row.querySelector('td:nth-child(10) input').value;
+                const GSTamount = row.querySelector('td:nth-child(9) input');
+                const totalWithGST = row.querySelector('td:nth-child(11) input');
+
+                totalGrossGSTPersentage = parseFloat(cgst) + parseFloat(sgst); // need correction
+                gstAmount = ((totalGrossGSTPersentage / 100).toFixed(2) * parseFloat(total)).toFixed(2)
+                GSTamount.value = gstAmount;
+                totalWithGST.value = parseFloat(gstAmount) + parseFloat(total);
+                calculateTotalWithGST();
+            }
+
+            function calculateTotalGSTamountOnly() {
+                const rows = document.querySelectorAll('#salesTable tr');
+                TotalGSTamountOnly = 0;
+
+                rows.forEach(row => {
+                    const total = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+                    TotalGSTamountOnly += total;
+                });
+
+                document.getElementById('TotalGSTamountOnly').innerText = TotalGSTamountOnly.toFixed(2);
+            }
+
+        }
+
+        // uploadEditData
+        async function uploadEditData(){
+            let allItems = [];
+
+            let itemTableRow = document.querySelectorAll("#salesTable>tr");
+            let singleItem = {};
+            itemTableRow.forEach((row) => {
+                singleItem = {};
+                singleItem.item_name = row.querySelectorAll("td")[1].querySelector("input").value;
+                singleItem.batch = row.querySelectorAll("td")[2].querySelector("input").value;
+                singleItem.qty = row.querySelectorAll("td")[3].querySelector("input").value;
+                singleItem.price = row.querySelectorAll("td")[4].querySelector("input").value;
+                singleItem.discount = row.querySelectorAll("td")[5].querySelector("input").value;
+                singleItem.cgst = row.querySelectorAll("td")[6].querySelector("input").value;
+                singleItem.sgst = row.querySelectorAll("td")[7].querySelector("input").value;
+                singleItem.total_GST_amount = row.querySelectorAll("td")[8].querySelector("input").value;
+                singleItem.total = row.querySelectorAll("td")[9].querySelector("input").value;
+                singleItem.total_with_GST = row.querySelectorAll("td")[10].querySelector("input").value;
+
+                allItems.push(singleItem);
+
+            })
+
+            let dataObj = {};
+            dataObj.customer_name = document.getElementById("customer").value;
+            dataObj.customer_contact = document.getElementById("phoneno").value;
+            dataObj.billing_date = document.getElementById("dateInput").value;
+
+            dataObj.total_amount = document.getElementById("grandTotal").textContent;
+            dataObj.total_GST = document.getElementById("TotalGSTamountOnly").textContent;
+            dataObj.total_with_GST = document.getElementById("grandTotalWithGST").textContent;
+            dataObj.billing_items = allItems
+
+            console.log(dataObj);
+            try {
+                const response = await fetch(`/edit-bill`, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(dataObj)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const table = document.getElementById('salesTable');
+                    // table.innerHTML = null;
+                    // document.getElementById("customer").value = "";
+                    // document.getElementById("phoneno").value = "";
+                    alert(result.message);
+
+                    // Example Usage
+                    downloadFile(`download-bill-pdf/${result.invoice_number}`, `${dataObj.customer_name}_${result.invoice_number}_invoice.pdf`);
+
+                } else {
+                    console.error('Error adding create_purchase:', result);
+                    alert(result.error);
+                }
+            } catch (error) {
+                // localStorage.setItem("offlineAddParty",JSON.stringify())
+                console.error('Request failed:', error);
+            }
         }
     </script>
 </body>
