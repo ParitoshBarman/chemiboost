@@ -24,7 +24,7 @@ urlpatterns = urlpatterns = [
     path("purchase-history", views.purchase_list, name="purchase_list"),
     path("create-bill", views.create_bill, name="create_bill"),
     path("get_billing_data", views.get_billing_data, name="get_billing_data"),
-    path("edit-bill", views.edit_bill, name="edit_bill"),
+    path("edit-bill/<int:bill_id>", views.edit_bill, name="edit_bill"),
     path("get-bill-details/<str:invoice_id>/", views.get_bill_details, name="get_bill_details"),
     path("create_purchase", views.create_purchase, name="create_purchase"),
     path("delete-purchase/<int:purchase_id>/", views.delete_purchase, name="delete_purchase"),

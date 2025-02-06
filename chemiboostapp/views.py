@@ -180,7 +180,7 @@ def create_bill(request):
             # Process billing items and update stock
             for item in billing_items:
                 batch = item["batch"]
-                qty_to_sell = item["qty"]
+                qty_to_sell = int(item["qty"])
                 item_name = item["item_name"]
 
                 # Check if stock exists
@@ -235,7 +235,7 @@ def create_bill(request):
             # Process billing items and update stock
             for item in billing_items:
                 batch = item["batch"]
-                qty_to_sell = item["qty"]
+                qty_to_sell = int(item["qty"])
 
                 # Check if stock exists
                 try:
@@ -269,7 +269,7 @@ def get_billing_data(request):
     per_page = int(request.GET.get("per_page", 10))  # Default 10 items per page
 
     # Filter by user
-    bills = Billing.objects.filter(ref_user=request.user.username)
+    bills = Billing.objects.filter(ref_user=request.user.username).order_by("-invoice_number")
 
     # Apply search filter (customer name, invoice number, or date)
     if query:
@@ -308,12 +308,104 @@ def get_billing_data(request):
         "has_previous": paginated_bills.has_previous(),
     }, safe=False, status=200)
 
-
 @csrf_exempt
-def edit_bill(request):
-    print("Work.......")
-    print("")
-    return JsonResponse({"message": "Working broooo...."})
+def edit_bill(request, bill_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
+    
+    if request.method == "PUT":
+        try:
+            data = json.loads(request.body)
+            customer_name = data.get("customer_name", "")
+            customer_contact = data.get("customer_contact", "")
+            billing_date = data.get("billing_date")
+            total_amount = data.get("total_amount")
+            total_GST = data.get("total_GST")
+            total_with_GST = data.get("total_with_GST")
+            billing_items = data.get("billing_items", [])
+            
+            
+            # Fetch the billing record
+            billing = Billing.objects.get(invoice_number=bill_id, ref_user=request.user.username)
+            
+            # Update billing details
+            billing.customer_name = customer_name
+            billing.customer_contact = customer_contact
+            billing.total_amount = total_amount
+            billing.total_GST = total_GST
+            billing.total_with_GST = total_with_GST
+            billing.save()
+            
+            # Fetch existing billing items
+            existing_items = BillingItem.objects.filter(billing=billing)
+            
+            # Restore stock quantities before deleting previous items
+            for item in existing_items:
+                stock = MedicineStock.objects.filter(ref_user=request.user.username, batch=item.batch).first()
+                if stock:
+                    stock.qty = F("qty") + item.qty  # Restoring previous quantity
+                    stock.save()
+            
+            # Delete old billing items
+            existing_items.delete()
+            
+            # Process new billing items
+            for item in billing_items:
+                batch = item["batch"]
+                qty_to_sell = int(item["qty"])
+                item_name = item["item_name"]
+
+                # Check if stock exists
+                try:
+                    stock = MedicineStock.objects.get(ref_user=request.user.username, batch=batch)
+
+                    if stock.qty < qty_to_sell:
+                        return JsonResponse({"error": f"Insufficient stock for batch {batch}, Name: {item_name}. Available: {stock.qty}, Required: {qty_to_sell}"}, status=400)
+
+
+                except MedicineStock.DoesNotExist:
+                    return JsonResponse({"error": f"Stock not found for batch {batch}, Name: {item_name}"}, status=404)
+
+
+                
+                # Check if stock exists
+                stock = MedicineStock.objects.filter(ref_user=request.user.username, batch=batch).first()
+                if not stock or stock.qty < qty_to_sell:
+                    return JsonResponse({"error": f"Insufficient stock for batch {batch}, Name: {item_name}. Available: {stock.qty if stock else 0}, Required: {qty_to_sell}"}, status=400)
+                
+                # Create new billing item
+                BillingItem.objects.create(
+                    billing=billing,
+                    ref_user=request.user.username,
+                    item_name=item["item_name"],
+                    batch=item["batch"],
+                    qty=item["qty"],
+                    price=item["price"],
+                    discount=item["discount"],
+                    cgst=item["cgst"],
+                    sgst=item["sgst"],
+                    total=item["total"],
+                    total_GST_amount=item["total_GST_amount"],
+                    total_with_GST=item["total_with_GST"]
+                )
+                
+                # Deduct stock quantity
+                stock.qty = F("qty") - qty_to_sell
+                stock.save()
+            
+            return JsonResponse({"success": True, "message": "Billing record updated successfully", "invoice_number": billing.invoice_number})
+        
+        except Billing.DoesNotExist:
+            return JsonResponse({"error": "Billing record not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+    
+            
+    
 
 def get_bill_details(request, invoice_id):
     if not request.user.is_authenticated:

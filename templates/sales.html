@@ -378,12 +378,12 @@
 
                 if (response.ok) {
                     const table = document.getElementById('salesTable');
-                    // table.innerHTML = null;
-                    // document.getElementById("customer").value = "";
-                    // document.getElementById("phoneno").value = "";
+                    table.innerHTML = null;
+                    document.getElementById("customer").value = "";
+                    document.getElementById("phoneno").value = "";
                     alert(result.message);
 
-                    // Example Usage
+                    // Download PDF file Usage
                     downloadFile(`download-bill-pdf/${result.invoice_number}`, `${dataObj.customer_name}_${result.invoice_number}_invoice.pdf`);
 
                 } else {

@@ -121,6 +121,8 @@
         .view-link {
             color: var(--fontcolor);
             text-decoration: none;
+            padding: 3px;
+            background-color: black;
         }
 
         .view-link:hover {
@@ -372,6 +374,12 @@
                             <p><strong>Grand Total with GST: ₹</strong><span id="grandTotalWithGST">0.00</span></p>
                         </div>
 
+                        <br>
+                        <div class="invoice-buttons">
+                            <!-- <button onclick="printInvoice()">🖨 Print Invoice</button> -->
+                            <button onclick="downloadInvoicePDF()" id="downloadInvoicePDF">📥 Download PDF</button>
+                        </div>
+
                     </div>
 
                 </div>
@@ -379,10 +387,12 @@
         </div>
     </main>
 
+    <script src='{% static "js/common.js" %}'></script>
+
     <script>
 
         let currentPage = 1;
-        const perPage = 5; // Change as needed
+        const perPage = 10; // Change as needed
 
         // Debounce function to optimize filtering
         function debounce(func, delay) {
@@ -521,12 +531,16 @@
                         table.appendChild(row);
                     })
 
-
+                    document.getElementById("downloadInvoicePDF").setAttribute("onclick", `downloadInvoicePDF(${data.bill.invoice_number})`, data.bill.customer_name);
                     document.getElementById("editInvoiceModal").style.display = "block";
                 })
                 .catch(error => console.error("Error fetching invoice data:", error));
         }
 
+        function downloadInvoicePDF(bill_invoice_number, customer_name) {
+            // downloadFile(`download-invoice-pdf/${purchase_invoice_number}`, `${purchase_invoice_number}_invoice.pdf`);
+            downloadFile(`download-bill-pdf/${bill_invoice_number}`, `${customer_name}_${bill_invoice_number}_invoice.pdf`);
+        }
 
         // Close Edit Modal
         function closeEditModal() {
@@ -785,10 +799,10 @@
             dataObj.total_GST = document.getElementById("TotalGSTamountOnly").textContent;
             dataObj.total_with_GST = document.getElementById("grandTotalWithGST").textContent;
             dataObj.billing_items = allItems
-
+            let bill_id = document.getElementById("editbill_invoice_number").getAttribute("data-bill_invoice_number");
             console.log(dataObj);
             try {
-                const response = await fetch(`/edit-bill`, {
+                const response = await fetch(`/edit-bill/${bill_id}`, {
                     method: 'PUT',
                     headers: {
                         "Content-Type": "application/json",
@@ -800,12 +814,13 @@
 
                 if (response.ok) {
                     const table = document.getElementById('salesTable');
-                    // table.innerHTML = null;
-                    // document.getElementById("customer").value = "";
-                    // document.getElementById("phoneno").value = "";
+                    table.innerHTML = null;
+                    document.getElementById("customer").value = "";
+                    document.getElementById("phoneno").value = "";
+                    closeEditModal();
                     alert(result.message);
 
-                    // Example Usage
+                    // Download PDF file Usage
                     downloadFile(`download-bill-pdf/${result.invoice_number}`, `${dataObj.customer_name}_${result.invoice_number}_invoice.pdf`);
 
                 } else {
