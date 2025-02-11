@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from django.core.serializers.json import DjangoJSONEncoder  # Encoder for JSON
+from decimal import Decimal
 
 # Create your models here.
 class UserDetails(models.Model):
@@ -126,11 +127,20 @@ class Customer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
+    def total_spend_amount(self):
+        # Use 'billing' related name for reverse relation
+        return self.billing.aggregate(total_spend=models.Sum('total_with_GST'))['total_spend'] or 0.00
+    def total_due(self):
+        # Calculate total due as the difference between total_with_GST and paid_amount for all related Billings
+        total_with_gst = Decimal(self.billing.aggregate(total=models.Sum('total_with_GST'))['total'] or 0.00)
+        total_paid = Decimal(self.billing.aggregate(total=models.Sum('paid_amount'))['total'] or 0.00)
+        return round(total_with_gst - total_paid, 2)  # Return rounded to 2 decimal places
+
 
 class Billing(models.Model):
     invoice_number = models.AutoField(primary_key=True)
     ref_user = models.CharField(max_length=255, default="")
-    customer = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, related_name='purchases')
+    customer = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, related_name='billing')
     customer_name = models.CharField(max_length=255, verbose_name="Customer Name")
     customer_contact = models.CharField(max_length=15, blank=True, null=True, verbose_name="Customer Contact")
     customer_email = models.EmailField(blank=True, null=True, verbose_name="Customer Email")

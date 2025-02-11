@@ -27,12 +27,74 @@
         .search-bar input:focus {
             border-color: var(--fontcolor);
         }
-        #customerTable a{
+
+        #customerTable a {
             color: white;
             text-decoration: none;
         }
-        #customerTable a:hover{
+
+        #customerTable td button {
+            background-color: black;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        #customerTable a:hover {
             color: aqua;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            background-color: var(--fontcolor);
+            color: black;
+            border-radius: 5px;
+        }
+
+        .pagination button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+
+        #payment-input-container {
+            min-width: 100%;
+            min-height: 100%;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f983;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        #payment-input-container > div{
+            background-color: rgb(26 34 44);
+            padding: 50px;
+            font-size: 20px;
+        }
+        #payment-input-container > div input{
+            font-size: 20px;
+        }
+
+        #payment-input-container > div button{
+            padding: 5px;
+        }
+
+        button {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -44,12 +106,12 @@
             <div class="container">
                 <div class="header">
                     <h1>My Customers</h1>
-                    <p>Total Customer: <span id="totalcustomer">200</span></p>
+                    <p>Total Customer: <span id="totalcustomer">0</span></p>
                 </div>
 
                 <div class="search-bar">
                     <input type="text" id="searchInput" placeholder="Search by Name, Phone, or Customer ID..."
-                        oninput="filterCustomers()">
+                        oninput="searchInput()">
                 </div>
 
                 <table>
@@ -58,59 +120,124 @@
                             <th>Customer ID</th>
                             <th>Name</th>
                             <th>Phone</th>
-                            <th>Email</th>
+                            <th>Total Due</th>
+                            <th>Total Spend</th>
+                            <th>Pay Amount</th>
                         </tr>
                     </thead>
                     <tbody id="customerTable">
                         <!-- Data will be dynamically populated -->
                     </tbody>
                 </table>
-            </div>
 
+                <!-- Pagination Buttons -->
+                <div class="pagination">
+                    <button id="prev-btn" onclick="changePage(-1)" disabled>Previous</button>
+                    <span id="page-info">Page 1</span>
+                    <button id="next-btn" onclick="changePage(1)" disabled>Next</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Hidden input field template -->
+        <div id="payment-input-container" style="display:flex;">
+            <div>
+            <label for="payment-amount">Enter Amount to Pay:</label>
+            <input type="number" id="payment-amount" placeholder="Amount in Rupees" style="font-size: 17px;padding: 3px;" />
+            <button onclick="submitPayment()" style="background-color: black;color: white;">Submit Payment</button>
+        </div>
         </div>
     </main>
 
-    <!-- JavaScript -->
     <script>
-        // Sample data (replace with backend data)
-        const customers = [
-            { id: 'C001', name: 'John Doe', phone: '9876543210', email: 'john@example.com' },
-            { id: 'C002', name: 'Jane Smith', phone: '9876543211', email: 'jane@example.com' },
-            { id: 'C003', name: 'Michael Brown', phone: '9876543212', email: 'michael@example.com' },
-            { id: 'C004', name: 'Emily Davis', phone: '9876543213', email: 'emily@example.com' },
-            { id: 'C005', name: 'Paul Johnson', phone: '9876543214', email: 'paul@example.com' }
-        ];
 
-        // Function to render customer data
-        function renderCustomers(filteredCustomers) {
+
+        let customers = [];
+        let currentPage = 1;
+        const perPage = 10;
+        let totalPages = 1;
+
+        async function fetchCustomers(page = 1) {
+            const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+            let url = `/get-mycustomers/?page=${page}&per_page=${perPage}`;
+            // console.log(url)
+
+            if (searchQuery) {
+                url += `&search=${encodeURIComponent(searchQuery)}`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch customers');
+                }
+
+                const data = await response.json();
+                console.log(data);
+                customers = data.customers;
+                totalPages = data.total_pages;
+                currentPage = data.current_page;
+
+                renderCustomers(customers);
+                updatePagination(data);
+            } catch (error) {
+                console.error('Error fetching customers:', error);
+            }
+        }
+
+        function renderCustomers(customers) {
             const tableBody = document.getElementById('customerTable');
             tableBody.innerHTML = '';
 
-            filteredCustomers.forEach(customer => {
+            customers.forEach(customer => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><a href="/customer/${customer.id}">${customer.id}</a></td>
                     <td><a href="/customer/${customer.id}">${customer.name}</a></td>
                     <td><a href="/customer/${customer.id}">${customer.phone}</a></td>
-                    <td><a href="/customer/${customer.id}">${customer.email}</a></td>
+                    <td><a href="/customer/${customer.id}">${customer.total_due}</a></td>
+                    <td><a href="/customer/${customer.id}">${customer.total_spend}</a></td>
+                    <td><button onclick="console.log(${customer.total_due})">Pay</button></td>
                 `;
                 tableBody.appendChild(row);
             });
+
+            document.getElementById('totalcustomer').textContent = customers.length;
         }
 
-        // Function to filter customers by search input
         function filterCustomers() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filteredCustomers = customers.filter(customer =>
-                customer.name.toLowerCase().includes(query) ||
-                customer.phone.includes(query) ||
-                customer.id.toLowerCase().includes(query)
-            );
-            renderCustomers(filteredCustomers);
+            fetchCustomers(1);
         }
 
-        // Render all customers on page load
-        renderCustomers(customers);
+        function updatePagination(data) {
+            document.getElementById('prev-btn').disabled = !data.has_previous;
+            document.getElementById('next-btn').disabled = !data.has_next;
+            document.getElementById('page-info').textContent = `Page ${data.current_page} of ${data.total_pages}`;
+        }
+
+        function changePage(step) {
+            if ((step === -1 && currentPage > 1) || (step === 1 && currentPage < totalPages)) {
+                fetchCustomers(currentPage + step);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => fetchCustomers());
+
+        // Debounce function to optimize filtering
+        let timeDebounce;
+        function searchInput() {
+            if (timeDebounce) {
+                clearTimeout(timeDebounce);
+            }
+            timeDebounce = setTimeout(() => {
+                fetchCustomers(1);
+            }, 1000);
+        }
     </script>
 </body>
 

@@ -30,6 +30,8 @@ def convert_to_iso_date(date_str):
 
 # Create your views here.
 def index(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     return render(request, "index.html")
 def purchase(request):
     PartyData = Party.objects.filter(user_details=UserDetails.objects.get(user=User.objects.get(username=request.user.username)))
@@ -76,6 +78,55 @@ def expiredmedicine(request):
     return render(request, "expiredmedicine.html")
 def mycustomers(request):
     return render(request, "mycustomers.html")
+
+def get_mycustomers(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
+    
+    ref_user = request.user.username
+    search_query = request.GET.get('search', '').strip().lower()
+    page = request.GET.get('page', 1)
+    per_page = request.GET.get('per_page', 5)
+
+    customers = Customer.objects.filter(ref_user=ref_user)
+
+    if search_query:
+        customers = customers.filter(
+            name__icontains=search_query
+        ) | customers.filter(
+            phone_number__icontains=search_query
+        ) | customers.filter(
+            customer_id__icontains=search_query
+        )
+
+    paginator = Paginator(customers, per_page)
+
+    try:
+        paginated_customers = paginator.page(page)
+    except:
+        return JsonResponse({"error": "Invalid page number"}, status=400)
+
+    formatted_customers = [
+        {
+            "id": customer.customer_id,
+            "name": customer.name,
+            "phone": customer.phone_number,
+            "email": customer.email,
+            "total_spend": f"{customer.total_spend_amount():.2f}",  # This will now use the 'billing' related_name
+            "total_due": customer.total_due()  # Call the total_due method
+        }
+        for customer in paginated_customers
+    ]
+
+    return JsonResponse({
+        "customers": formatted_customers,
+        "total_pages": paginator.num_pages,
+        "current_page": paginated_customers.number,
+        "has_next": paginated_customers.has_next(),
+        "has_previous": paginated_customers.has_previous()
+    })
+
+
 def pendingpayments(request):
     return render(request, "pendingpayments.html")
 def mybills(request):
