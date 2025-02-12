@@ -80,16 +80,22 @@
             left: 0;
             top: 0;
         }
-        #payment-input-container > div{
+
+        #payment-input-container>div {
+            padding: 5px 10px;
             background-color: rgb(26 34 44);
-            padding: 50px;
-            font-size: 20px;
-        }
-        #payment-input-container > div input{
             font-size: 20px;
         }
 
-        #payment-input-container > div button{
+        #payment-input-container>div>div {
+            padding: 50px;
+        }
+
+        #payment-input-container>div>div input {
+            font-size: 20px;
+        }
+
+        #payment-input-container>div>div button {
             padding: 5px;
         }
 
@@ -141,12 +147,19 @@
         </div>
 
         <!-- Hidden input field template -->
-        <div id="payment-input-container" style="display:flex;">
+        <div id="payment-input-container" style="display:none;">
             <div>
-            <label for="payment-amount">Enter Amount to Pay:</label>
-            <input type="number" id="payment-amount" placeholder="Amount in Rupees" style="font-size: 17px;padding: 3px;" />
-            <button onclick="submitPayment()" style="background-color: black;color: white;">Submit Payment</button>
-        </div>
+                <button style="float: right;background-color: transparent;border: none;color: white;font-size: 20px;"
+                    onclick="closePaymenModal()">X</button>
+                <div>
+                    <label for="payment-amount">Enter Amount to Pay:</label>
+                    <input type="number" id="payment-amount" placeholder="Amount in Rupees"
+                        style="font-size: 17px;padding: 3px;" />
+                    <button onclick="submitPayment()" id="submitpaymentbtn"
+                        style="background-color: black;color: white;">Submit
+                        Payment</button>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -178,7 +191,6 @@
                 }
 
                 const data = await response.json();
-                console.log(data);
                 customers = data.customers;
                 totalPages = data.total_pages;
                 currentPage = data.current_page;
@@ -202,7 +214,7 @@
                     <td><a href="/customer/${customer.id}">${customer.phone}</a></td>
                     <td><a href="/customer/${customer.id}">${customer.total_due}</a></td>
                     <td><a href="/customer/${customer.id}">${customer.total_spend}</a></td>
-                    <td><button onclick="console.log(${customer.total_due})">Pay</button></td>
+                    <td><button onclick="paymentModal(${customer.id}, ${customer.total_due})">Pay</button></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -237,6 +249,33 @@
             timeDebounce = setTimeout(() => {
                 fetchCustomers(1);
             }, 1000);
+        }
+
+
+        // close modal
+        function closePaymenModal() {
+            document.getElementById("payment-amount").value = "";
+            document.getElementById("payment-input-container").style.display = "none";
+        }
+
+        // close payment modal by clicking outside
+        document.querySelector("#payment-input-container").addEventListener("click", (e) => {
+            if (e.target == document.querySelector("#payment-input-container")) {
+                closePaymenModal();
+            }
+        })
+
+        // open payment modal
+        function paymentModal(customerID, total_due) {
+            document.getElementById("submitpaymentbtn").setAttribute("onclick", `submitPayment(${customerID})`)
+            document.getElementById("payment-input-container").style.display = "flex";
+        }
+
+        function submitPayment(customerID) {
+            let payAmount = document.getElementById("payment-amount").value;
+            if (payAmount != "" && parseInt(payAmount) > 0) {
+                console.log("ID",customerID);
+            }
         }
     </script>
 </body>
