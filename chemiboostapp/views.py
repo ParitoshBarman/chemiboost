@@ -187,7 +187,7 @@ def get_mycustomers(request):
     page = request.GET.get('page', 1)
     per_page = request.GET.get('per_page', 5)
 
-    customers = Customer.objects.filter(ref_user=ref_user)
+    customers = Customer.objects.filter(ref_user=ref_user).order_by("-customer_id")
 
     if search_query:
         customers = customers.filter(
