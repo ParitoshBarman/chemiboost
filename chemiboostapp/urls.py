@@ -4,6 +4,7 @@ from chemiboostapp import views
 
 urlpatterns = urlpatterns = [
     path("", views.index, name='home'),
+    path("get_dashboard_data", views.get_dashboard_data, name='get_dashboard_data'),
     path("purchase", views.purchase, name='purchase'),
     path("sales", views.sales, name='sales'),
     path("stock", views.stock, name='stock'),

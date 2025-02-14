@@ -139,8 +139,6 @@
     <script>
         // Sample stock data
         const stockData = {{ stock_data|safe }};
-        console.log(stockData)
-        console.log(typeof stockData)
 
         function updateStockSummary() {
             const totalProducts = stockData.length;

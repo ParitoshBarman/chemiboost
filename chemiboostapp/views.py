@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.contrib.auth.models import User
-from django.db.models import F
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import JsonResponse
@@ -10,14 +9,13 @@ from chemiboostapp import whatsappcloud
 from django.contrib.auth.decorators import login_required
 from chemiboostapp.models import Party, UserDetails, Purchase, PurchaseItem, MedicineStock, Customer, Billing, BillingItem
 from django.core import serializers
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.core.paginator import Paginator
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 import threading
 from chemiboostapp import extrafunction
-from django.db.models import Q
-from django.db.models import Prefetch
+from django.db.models import Q, F, Prefetch, Sum
 
 mytoken = "hjhhkjhjhkjhjkghghjgjhghg"
 
@@ -33,6 +31,107 @@ def index(request):
     if not request.user.is_authenticated:
         return redirect('login')
     return render(request, "index.html")
+def get_dashboard_data(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User authentication required"}, status=401)
+    
+    """Retrieve and filter purchase items based on query parameters."""
+    range_type = request.GET.get("range_type", "lifetime")
+    from_date_str = request.GET.get("from_date_str")
+    to_date_str = request.GET.get("to_date_str")
+
+    ref_user = request.user.username
+
+    now = datetime.now()
+    start_date = None
+    queryset = Purchase.objects.filter(ref_user=ref_user)
+    queryset_for_sales = Billing.objects.filter(ref_user=ref_user)
+    queryset_for_customer = Customer.objects.filter(ref_user=ref_user)
+    queryset_for_medicines = BillingItem.objects.filter(ref_user=ref_user)
+
+
+    # Handle predefined time ranges
+    # Handle custom date range
+    if from_date_str and to_date_str:
+        try:
+            from_date = datetime.strptime(from_date_str, "%Y-%m-%d")
+            to_date = datetime.strptime(to_date_str, "%Y-%m-%d") + timedelta(days=1)  # Include full day
+            queryset = queryset.filter(created_date__range=[from_date, to_date])
+            queryset_for_sales = queryset_for_sales.filter(billing_date__range=[from_date, to_date])
+            queryset_for_customer = queryset_for_customer.filter(created_at__range=[from_date, to_date])
+            queryset_for_medicines = queryset_for_medicines.filter(created_at__range=[from_date, to_date])
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
+    else:
+        if range_type == "last24":
+            start_date = now - timedelta(hours=24)
+            queryset = queryset.filter(created_date__gte=start_date)
+            queryset_for_sales = queryset_for_sales.filter(billing_date__gte=start_date)
+            queryset_for_customer = queryset_for_customer.filter(created_at__gte=start_date)
+            queryset_for_medicines = queryset_for_medicines.filter(created_at__gte=start_date)
+        elif range_type == "today":
+            start_date = datetime(now.year, now.month, now.day)
+            queryset = queryset.filter(created_date__gte=start_date)
+            queryset_for_sales = queryset_for_sales.filter(billing_date__gte=start_date)
+            queryset_for_customer = queryset_for_customer.filter(created_at__gte=start_date)
+            queryset_for_medicines = queryset_for_medicines.filter(created_at__gte=start_date)
+        elif range_type == "yesterday":
+            start_date = datetime(now.year, now.month, now.day) - timedelta(days=1)
+            end_date = datetime(now.year, now.month, now.day)
+            queryset = queryset.filter(created_date__range=[start_date, end_date])
+            queryset_for_sales = queryset_for_sales.filter(billing_date__range=[start_date, end_date])
+            queryset_for_customer = queryset_for_customer.filter(created_at__range=[start_date, end_date])
+            queryset_for_medicines = queryset_for_medicines.filter(created_at__range=[start_date, end_date])
+        elif range_type == "thisweek":
+            start_date = now - timedelta(days=now.weekday())  # Start of this week
+            queryset = queryset.filter(created_date__gte=start_date)
+            queryset_for_sales = queryset_for_sales.filter(billing_date__gte=start_date)
+            queryset_for_customer = queryset_for_customer.filter(created_at__gte=start_date)
+            queryset_for_medicines = queryset_for_medicines.filter(created_at__gte=start_date)
+        elif range_type == "thismonth":
+            start_date = datetime(now.year, now.month, 1)  # Start of this month
+            queryset = queryset.filter(created_date__gte=start_date)
+            queryset_for_sales = queryset_for_sales.filter(billing_date__gte=start_date)
+            queryset_for_customer = queryset_for_customer.filter(created_at__gte=start_date)
+            queryset_for_medicines = queryset_for_medicines.filter(created_at__gte=start_date)
+        elif range_type == "thisyear":
+            start_date = datetime(now.year, 1, 1)  # Start of this year
+            queryset = queryset.filter(created_date__gte=start_date)
+            queryset_for_sales = queryset_for_sales.filter(billing_date__gte=start_date)
+            queryset_for_customer = queryset_for_customer.filter(created_at__gte=start_date)
+            queryset_for_medicines = queryset_for_medicines.filter(created_at__gte=start_date)
+    
+    # if start_date:
+    #     queryset = queryset.filter(created_date__gte=start_date)
+
+    
+    # Get total sum of total_amount_with_GST
+    total_sum_of_expence = queryset.aggregate(total_sum=Sum("total_amount_with_GST"))["total_sum"] or 0.00
+    total_sum_of_sales = queryset_for_sales.aggregate(total_sum=Sum("total_with_GST"))["total_sum"] or 0.00
+    total_customer = len(queryset_for_customer)
+
+    # Serialize data
+    purchase_data = list(queryset.values(
+        "total_amount_with_GST",
+        "created_date",
+        "created_time"
+    ))
+    # Serialize data data for sales
+    sales_data = list(queryset_for_sales.values(
+        "total_with_GST",
+        "billing_date",
+        "billing_time"
+    ))
+     # Get most used medicines
+    most_used_medicines = queryset_for_medicines.values("item_name").annotate(total_qty=Sum("qty")).order_by("-total_qty")[:10]
+    # Convert to the required format
+    medicine_usage_data = [["Medicine", "Usage Count"]]  # Header
+    for medicine in most_used_medicines:
+        medicine_usage_data.append([medicine["item_name"], medicine["total_qty"]])
+
+    return JsonResponse({"purchase_data": purchase_data,"sales_data":sales_data,"total_sum_of_sales":f"{total_sum_of_sales:.2f}", "total_sum_of_expence":f"{total_sum_of_expence:.2f}", "total_customer":total_customer, "most_used_medicines": medicine_usage_data}, safe=False)
+    
+
 def purchase(request):
     PartyData = Party.objects.filter(user_details=UserDetails.objects.get(user=User.objects.get(username=request.user.username)))
     PartyData = serializers.serialize('json', PartyData)

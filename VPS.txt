@@ -1,12 +1,12 @@
 sudo apt-get update
 sudo apt-get install python3-pip python3-dev libpq-dev nginx
 
-sudo -H pip3 install --upgrade pip
+sudo -H pip3 install --upgrade pip  // for 22.2 LTS version
     or
 sudo apt install python3-pip
 
 
-sudo -H pip3 install virtualenv
+sudo -H pip3 install virtualenv   // for 22.2 LTS version
      or
 sudo apt install python3-virtualenv
 
@@ -19,14 +19,16 @@ cd chemiboost
 virtualenv venv
 source venv/bin/activate
 
-sudo ufw allow 8000
+sudo ufw allow 8000 X  //No need for now this time
+
+pip install -r requirements.txt
 
 for test ==> python manage.py runserver 0.0.0.0:8000
 
-pip install django gunicorn
+pip install gunicorn
 
 
-gunicorn --bind 0.0.0.0:8000 aaso.wsgi
+gunicorn --bind 0.0.0.0:8000 chemiboost.wsgi
 
 
 deactivate
@@ -67,7 +69,7 @@ ExecStart=/home/ubuntu/chemiboost/venv/bin/gunicorn \
           --access-logfile - \
           --workers 3 \
           --bind unix:/run/gunicorn.sock \
-          aaso.wsgi:application
+          chemiboost.wsgi:application
 Restart=always
 RestartSec=3
 [Install]
@@ -110,7 +112,7 @@ sudo vim /etc/nginx/sites-available/chemiboost
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
 server {
     listen 80 default_server;
-    server_name 13.233.190.141;
+    server_name 43.204.149.173, chemiboost.com, www.chemiboost.com;
     location = /favicon.ico { access_log off; log_not_found off; }
     
     location / {
@@ -158,10 +160,10 @@ sudo apt install certbot python3-certbot-nginx
 sudo ufw status
 sudo ufw allow 'Nginx Full'
 
-if I want multiple domain https  ==>> sudo certbot --nginx -d goobusines.com -d goobusiness.autoimg.xyz
-sudo certbot --nginx -d goobusines.com
-sudo certbot --nginx -d goo-business.com
-sudo certbot --nginx -d indiacreditsales.com
+if I want multiple domain https  ==>> sudo certbot --nginx -d chemiboost.com -d www.chemiboost.com
+sudo certbot --nginx -d chemiboost.com
+sudo certbot --nginx -d www.chemiboost.com
+
 or
 
 sudo certbot --nginx
