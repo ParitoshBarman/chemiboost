@@ -802,6 +802,10 @@ def create_purchase(request):
                 if not created:
                     # If stock exists, update quantity and expiration date
                     stock.qty = F("qty") + item["Qty"]
+                    stock.mrp = item["MRP"]
+                    stock.rate = item["Rate"]
+                    stock.cgst = item["cgst"]
+                    stock.sgst = item["sgst"]
                     stock.exp_date = datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None
                     stock.save()
 
