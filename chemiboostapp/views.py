@@ -9,7 +9,7 @@ from chemiboostapp import whatsappcloud
 from django.contrib.auth.decorators import login_required
 from chemiboostapp.models import Party, UserDetails, Purchase, PurchaseItem, MedicineStock, Customer, Billing, BillingItem
 from django.core import serializers
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.core.paginator import Paginator
 from django.template.loader import get_template
 from xhtml2pdf import pisa
@@ -1199,3 +1199,37 @@ def get_customers(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+def get_expired_medicines(request):
+    today = date.today()
+    filter_option = request.GET.get("filter", "all")
+    query = request.GET.get("query", "")
+    ref_user = request.user.username
+    
+    if filter_option == "today":
+        medicines = MedicineStock.objects.filter(ref_user=ref_user, exp_date=today, item_name__icontains=query)
+    elif filter_option == "yesterday":
+        medicines = MedicineStock.objects.filter(ref_user=ref_user, exp_date=today - timedelta(days=1), item_name__icontains=query)
+    elif filter_option == "week":
+        medicines = MedicineStock.objects.filter(ref_user=ref_user, exp_date__range=[today, today + timedelta(weeks=1)], item_name__icontains=query)
+    elif filter_option == "month":
+        medicines = MedicineStock.objects.filter(ref_user=ref_user, exp_date__range=[today, today + timedelta(days=30)], item_name__icontains=query)
+    elif filter_option == "sixMonths":
+        medicines = MedicineStock.objects.filter(ref_user=ref_user, exp_date__range=[today, today + timedelta(days=180)], item_name__icontains=query)
+    elif filter_option == "year":
+        medicines = MedicineStock.objects.filter(ref_user=ref_user, exp_date__range=[today, today + timedelta(days=365)], item_name__icontains=query)
+    else:
+        medicines = MedicineStock.objects.all()
+    
+    medicine_list = [
+        {
+            "sn": index + 1,
+            "name": med.item_name,
+            "batch": med.batch,
+            "expiry": med.exp_date.strftime("%Y-%m-%d") if med.exp_date else "",
+            "stock": med.qty
+        }
+        for index, med in enumerate(medicines)
+    ]
+    
+    return JsonResponse(medicine_list, safe=False)

@@ -14,7 +14,7 @@
             --dangercolor: rgb(255, 77, 77);
         }
 
-        
+
 
         .container {
             margin: 20px;
@@ -94,21 +94,22 @@
                 <div class="header">
                     <h1>Expired Medicines</h1>
                 </div>
-        
+
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search for medicine..." oninput="filterMedicines()">
+                    <input type="text" id="searchInput" placeholder="Search for medicine..."
+                        oninput="debounceSearch()">
                 </div>
                 <div class="dropdown">
-                    <select id="expiryFilter" onchange="applyFilter()">
+                    <select id="expiryFilter" onchange="fetchMedicines()">
                         <option value="today">Expired Today</option>
                         <option value="yesterday">Expired Yesterday</option>
                         <option value="week">Expiring in 1 Week</option>
-                        <option value="month">Expiring in 1 Month</option>
+                        <option value="month" selected>Expiring in 1 Month</option>
                         <option value="sixMonths">Expiring in 6 Months</option>
                         <option value="year">Expiring in 1 Year</option>
                     </select>
                 </div>
-        
+
                 <table>
                     <thead>
                         <tr>
@@ -130,16 +131,31 @@
     <!-- JavaScript -->
     <script>
         // Sample data (you can replace this with data fetched from your backend)
-        const medicines = [
-            { sn: 1, name: 'Paracetamol', batch: 'B123', expiry: '2024-01-01', stock: 20 },
-            { sn: 2, name: 'Amoxicillin', batch: 'B456', expiry: '2023-12-20', stock: 15 },
-            { sn: 3, name: 'Cough Syrup', batch: 'B789', expiry: '2023-12-05', stock: 5 },
-            { sn: 4, name: 'Ibuprofen', batch: 'B321', expiry: '2024-05-10', stock: 50 },
-            { sn: 5, name: 'Vitamin C', batch: 'B654', expiry: '2023-11-25', stock: 10 },
-        ];
+        let timerId;
+        function debounceSearch(){
+            if(timerId){
+                clearTimeout(timerId);
+            }
+            timerId = setTimeout(() => {
+                fetchMedicines();
+            }, 1000);
+        };
+
+        let medicines = [];
+        function fetchMedicines() {
+            console.log("Feching exp data")
+            let filter = document.getElementById("expiryFilter").value;
+            let query = document.getElementById("searchInput").value;
+            fetch(`/get_expired_medicines?filter=${filter}&query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderMedicines(data);
+                })
+                .catch(error => console.error("Error fetching medicines:", error));
+        }
 
         // Function to render medicine data
-        function renderMedicines() {
+        function renderMedicines(medicines) {
             const tableBody = document.getElementById('medicineTable');
             tableBody.innerHTML = '';
 
@@ -171,7 +187,8 @@
         }
 
         // Render medicines on page load
-        renderMedicines();
+        // renderMedicines();
+        fetchMedicines();
     </script>
 </body>
 

@@ -40,4 +40,5 @@ urlpatterns = urlpatterns = [
     path("generate_invoice_pdf/<int:purchase_id>", views.generate_invoice_pdf, name='generate_invoice_pdf'),
     path("get_medicine_stock", views.get_medicine_stock, name='get_medicine_stock'),
     path("get_customers", views.get_customers, name='get_customers'),
+    path("get_expired_medicines", views.get_expired_medicines, name='get_expired_medicines'),
 ]
