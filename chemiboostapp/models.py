@@ -113,6 +113,8 @@ class MedicineStock(models.Model):
     totalGSTamount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST amount")
     totalWithGST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total with GST")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    def per_pice_price(self):
+        return self.totalWithGST/self.qty
 
 
 
@@ -168,6 +170,7 @@ class Billing(models.Model):
     billing_time = models.TimeField(auto_now_add=True, verbose_name="Billing Time")
     last_update_date = models.DateField(auto_now=True, verbose_name="Last Update Date")
     last_update_time = models.TimeField(auto_now=True, verbose_name="Last Update Time")
+    total_profit = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total Profit")
 
 
 class BillingItem(models.Model):
@@ -185,6 +188,6 @@ class BillingItem(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Price")
     total_GST_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST Amount")
     total_with_GST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total with GST")
+    profit = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Profit")
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-
