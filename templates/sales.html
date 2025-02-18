@@ -160,6 +160,7 @@
             </div>
         </div>
     </main>
+    <button id="extraAction" onclick="window.pyBridge.extraAction(5, 'Hello test')">Extra Action</button>
 
     <script src='{% static "js/common.js" %}'></script>
     <!-- JavaScript -->
@@ -382,9 +383,16 @@
                     document.getElementById("customer").value = "";
                     document.getElementById("phoneno").value = "";
                     alert(result.message);
-
+                    
                     // Download PDF file Usage
-                    downloadFile(`download-bill-pdf/${result.invoice_number}`, `${dataObj.customer_name}_${result.invoice_number}_invoice.pdf`);
+                    try{
+                        window.pyBridge.downloadAndPrint(`download-bill-pdf/${result.invoice_number}`, result.invoice_number, dataObj.customer_name, dataObj.customer_contact, dataObj.total_amount, dataObj.total_GST, dataObj.total_with_GST, JSON.stringify(dataObj.billing_items))
+                        alert("Downloaded By Official Software");
+                    }catch{
+                        downloadFile(`download-bill-pdf/${result.invoice_number}`, `${dataObj.customer_name}_${result.invoice_number}_invoice.pdf`);
+                        alert("Downloaded By Web");
+
+                    }
 
                 } else {
                     console.error('Error adding create_purchase:', result);
