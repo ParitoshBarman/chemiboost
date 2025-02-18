@@ -1091,7 +1091,11 @@ def download_invoice_pdf(request, purchase_id):
 
 def download_sales_invoice_pdf(request, invoice_id):
     if not request.user.is_authenticated:
-        return JsonResponse({"error": "User authentication required"}, status=401)
+        try:
+            if request.headers["Devicedetection"]!="ChemoBoostOfficialDevice":
+                return JsonResponse({"error": "User authentication required"}, status=401)
+        except:
+            return JsonResponse({"error": "User authentication required"}, status=401)
     try:
         # Fetch the billing details from the database
         billing = Billing.objects.get(invoice_number=invoice_id)
