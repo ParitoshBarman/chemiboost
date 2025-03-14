@@ -388,6 +388,7 @@
     </main>
 
     <script src='{% static "js/common.js" %}'></script>
+    <script src='{% static "js/commonShortCart.js" %}'></script>
 
     <script>
 
@@ -414,7 +415,6 @@
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
                 const bills = await response.json();
-                console.log("Billing Data okkkk:", bills); // Debugging output
                 renderBills(bills); // Render filtered data
                 updatePaginationUI(bills.total_pages, bills.current_page, bills.has_next, bills.has_previous);
             } catch (error) {
@@ -498,7 +498,6 @@
             fetch(`/get-bill-details/${invoice_number}/`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data)
                     editingInvoiceId = invoice_number;
 
                     document.getElementById("customer").value = data.bill.customer_name;
@@ -642,6 +641,7 @@
 
             table.appendChild(row);
             rowCount++;
+            document.querySelector("#salesTable>tr:last-child>td:nth-child(2)>input").focus();
         }
 
         let medicineStock = [];
@@ -800,7 +800,6 @@
             dataObj.total_with_GST = document.getElementById("grandTotalWithGST").textContent;
             dataObj.billing_items = allItems
             let bill_id = document.getElementById("editbill_invoice_number").getAttribute("data-bill_invoice_number");
-            console.log(dataObj);
             try {
                 const response = await fetch(`/edit-bill/${bill_id}`, {
                     method: 'PUT',

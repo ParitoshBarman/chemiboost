@@ -99,7 +99,7 @@
                 </div>
 
                 <!-- Form for Sales Details -->
-                <form id="medicinelistdataform">
+                <div id="medicinelistdataform">
                     {% csrf_token %}
                     <div class="customersec">
                         <div class="form-group input-group">
@@ -143,9 +143,9 @@
                     <!-- Footer for Totals and Buttons -->
                     <div class="footer">
                         <button type="button" onclick="addRow()">Add Item</button>
-                        <button type="submit">Save Invoice</button>
+                        <button onclick="createBill()" type="button">Save Invoice</button>
                     </div>
-                </form>
+                </div>
 
                 <!-- Summary Section -->
                 <div class="summary">
@@ -163,6 +163,7 @@
     <button id="extraAction" onclick="window.pyBridge.extraAction(5, 'Hello test')">Extra Action</button>
 
     <script src='{% static "js/common.js" %}'></script>
+    <script src='{% static "js/commonShortCart.js" %}'></script>
     <!-- JavaScript -->
     <script>
         let rowCount = 1;
@@ -188,6 +189,7 @@
 
             table.appendChild(row);
             rowCount++;
+            document.querySelector("#salesTable>tr:last-child>td:nth-child(2)>input").focus();
         }
 
         function updateTotal(input) {
@@ -331,8 +333,7 @@
 
         }
 
-        document.getElementById("medicinelistdataform").addEventListener("submit", async (e) => {
-            e.preventDefault();
+        async function createBill(){
 
             let allItems = [];
 
@@ -365,7 +366,6 @@
             dataObj.total_with_GST = document.getElementById("grandTotalWithGST").textContent;
             dataObj.billing_items = allItems
 
-            console.log(dataObj);
             try {
                 const response = await fetch(`/create-bill`, {
                     method: 'POST',
@@ -387,10 +387,10 @@
                     // Download PDF file Usage
                     try{
                         window.pyBridge.downloadAndPrint(`download-bill-pdf/${result.invoice_number}`, result.invoice_number, dataObj.customer_name, dataObj.customer_contact, dataObj.total_amount, dataObj.total_GST, dataObj.total_with_GST, JSON.stringify(dataObj.billing_items))
-                        alert("Downloaded By Official Software");
+                        // alert("Downloaded By Official Software");
                     }catch{
                         downloadFile(`download-bill-pdf/${result.invoice_number}`, `${dataObj.customer_name}_${result.invoice_number}_invoice.pdf`);
-                        alert("Downloaded By Web");
+                        // alert("Downloaded By Web");
 
                     }
 
@@ -402,7 +402,7 @@
                 // localStorage.setItem("offlineAddParty",JSON.stringify())
                 console.error('Request failed:', error);
             }
-        });
+        };
 
         let medicineStock = [];
         // Fetch medicine stock from the server
@@ -455,6 +455,8 @@
             document.getElementById(`batch_${rowNum}`).value = batch;
             document.getElementById(`price_${rowNum}`).value = mrp;
         }
+
+        
     </script>
 </body>
 

@@ -233,6 +233,7 @@
     </div>
 
     <script src='{% static "js/common.js" %}'></script>
+    <script src='{% static "js/commonShortCart.js" %}'></script>
     <script>
         let rowCount = 1;
 
@@ -258,6 +259,7 @@
 
             table.appendChild(row);
             rowCount++;
+            document.querySelector("#itemTable>tr:last-child>td:nth-child(2)>input").focus();
         }
 
         function calculateTotal(input) {
