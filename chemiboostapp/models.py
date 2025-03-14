@@ -92,9 +92,11 @@ class PurchaseItem(models.Model):
     cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Cgst In persentage")
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Sgst In persentage")
     qty = models.IntegerField(verbose_name="Quantity")
+    Dis = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Discount Amount")  # New Discount Field
     total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total")
     totalGSTamount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST amount")
     totalWithGST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total with GST")
+    Free = models.IntegerField(verbose_name="Free Medicine")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
 
 class MedicineStock(models.Model):

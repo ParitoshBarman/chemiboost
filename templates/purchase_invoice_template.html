@@ -68,11 +68,13 @@
             <th>MRP</th>
             <th>Rate</th>
             <th>Qty</th>
+            <th>Dis%</th>
             <th>Total</th>
             <th>CGST%</th>
             <th>SGST%</th>
             <th>GST Amount</th>
             <th>Total With GST</th>
+            <th>Free</th>
         </tr>
         {% for item in items %}
         <tr>
@@ -82,11 +84,13 @@
             <td>{{ item.mrp }}</td>
             <td>{{ item.rate }}</td>
             <td>{{ item.qty }}</td>
+            <td>{{ item.Dis }}</td>
             <td>{{ item.total }}</td>
             <td>{{ item.cgst }}</td>
             <td>{{ item.sgst }}</td>
             <td>{{ item.totalGSTamount }}</td>
             <td>{{ item.totalWithGST }}</td>
+            <td>{{ item.Free }}</td>
         </tr>
         {% endfor %}
     </table>

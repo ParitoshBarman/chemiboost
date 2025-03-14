@@ -162,11 +162,13 @@
                             <th>MRP</th>
                             <th>Rate</th>
                             <th>Qty</th>
+                            <th>Dis%</th>
                             <th>Total</th>
                             <th>Cgst</th>
                             <th>Sgst</th>
                             <th>GST amount</th>
                             <th>Total With GST</th>
+                            <th>Free</th>
                         </tr>
                     </thead>
                     <tbody id="itemTable">
@@ -246,15 +248,17 @@
                 <td><input type="text" placeholder="Company"></td>
                 <td><input type="text" placeholder="Item Name"></td>
                 <td><input type="text" placeholder="Batch"></td>
-                <td><input type="date"></td>
+                <td><input type="month"></td>
                 <td><input type="number" placeholder="MRP" value="0"></td>
                 <td><input type="number" placeholder="Rate" onkeyup="calculateTotal(this)" value="0"></td>
                 <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)" value="0"></td>
+                <td><input type="number" placeholder="Dis%" onkeyup="calculateTotal(this)" value="0"></td>
                 <td><input type="number" placeholder="Total" readonly value="0"></td>
                 <td><input type="number" placeholder="Cgst" onkeyup="calculateTotal(this)" value="0"></td>
                 <td><input type="number" placeholder="Sgst" onkeyup="calculateTotal(this)" value="0"></td>
                 <td><input type="number" placeholder="Total GST Amount" readonly value="0"></td>
                 <td><input type="number" placeholder="Total With GST" readonly value="0"></td>
+                <td><input type="number" placeholder="Free" value="0"></td>
             `;
 
             table.appendChild(row);
@@ -264,11 +268,17 @@
 
         function calculateTotal(input) {
             const row = input.parentElement.parentElement;
-            const rate = row.querySelector('td:nth-child(7) input').value;
-            const qty = row.querySelector('td:nth-child(8) input').value;
-            const totalCell = row.querySelector('td:nth-child(9) input');
+            const rate = row.querySelector('td:nth-child(7) input').value || 0;
+            const qty = row.querySelector('td:nth-child(8) input').value || 0;
+            const totalCell = row.querySelector('td:nth-child(10) input');
 
-            totalCell.value = (rate * qty).toFixed(2);
+            // for discount
+            const discount = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+            // const total = (qty * price * (1 - discount / 100)).toFixed(2);
+            // row.querySelector('td:nth-child(10) input').value = total;
+            // for discount
+
+            totalCell.value = (rate * qty * (1 - discount / 100)).toFixed(2);
             calculateGrandTotal();
 
 
@@ -278,7 +288,7 @@
                 grandTotal = 0;
 
                 rows.forEach(row => {
-                    const total = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+                    const total = parseFloat(row.querySelector('td:nth-child(10) input').value) || 0;
                     grandTotal += total;
                 });
 
@@ -291,7 +301,7 @@
                 TotalwithGST = 0;
 
                 rows.forEach(row => {
-                    const total = parseFloat(row.querySelector('td:nth-child(13) input').value) || 0;
+                    const total = parseFloat(row.querySelector('td:nth-child(14) input').value) || 0;
                     TotalwithGST += total;
                 });
 
@@ -301,11 +311,11 @@
 
             function calculateGSTamount() {
                 const row = input.parentElement.parentElement;
-                const cgst = row.querySelector('td:nth-child(10) input').value;
-                const sgst = row.querySelector('td:nth-child(11) input').value;
-                const total = row.querySelector('td:nth-child(9) input').value;
-                const GSTamount = row.querySelector('td:nth-child(12) input');
-                const totalWithGST = row.querySelector('td:nth-child(13) input');
+                const cgst = row.querySelector('td:nth-child(11) input').value || 0;
+                const sgst = row.querySelector('td:nth-child(12) input').value || 0;
+                const total = row.querySelector('td:nth-child(10) input').value;
+                const GSTamount = row.querySelector('td:nth-child(13) input');
+                const totalWithGST = row.querySelector('td:nth-child(14) input');
 
                 totalGrossGSTPersentage = parseFloat(cgst) + parseFloat(sgst); // need correction
                 gstAmount = ((totalGrossGSTPersentage / 100).toFixed(2) * parseFloat(total)).toFixed(2)
@@ -319,7 +329,7 @@
                 TotalGSTamountOnly = 0;
 
                 rows.forEach(row => {
-                    const total = parseFloat(row.querySelector('td:nth-child(12) input').value) || 0;
+                    const total = parseFloat(row.querySelector('td:nth-child(13) input').value) || 0;
                     TotalGSTamountOnly += total;
                 });
 
@@ -330,28 +340,33 @@
 
         async function uploadData() {
             let allItems = [];
-
+            
             let itemTableRow = document.querySelectorAll("#itemTable>tr");
             let singleItem = {};
             itemTableRow.forEach((row) => {
                 singleItem = {};
+                let monthInput = row.querySelectorAll("td")[4].querySelector("input").value;
+                
                 singleItem.Company = row.querySelectorAll("td")[1].querySelector("input").value;
                 singleItem.ItemName = row.querySelectorAll("td")[2].querySelector("input").value;
                 singleItem.Batch = row.querySelectorAll("td")[3].querySelector("input").value;
-                singleItem.ExpDate = row.querySelectorAll("td")[4].querySelector("input").value;
-                singleItem.MRP = row.querySelectorAll("td")[5].querySelector("input").value;
-                singleItem.Rate = row.querySelectorAll("td")[6].querySelector("input").value;
-                singleItem.Qty = row.querySelectorAll("td")[7].querySelector("input").value;
-                singleItem.Total = row.querySelectorAll("td")[8].querySelector("input").value;
-                singleItem.cgst = row.querySelectorAll("td")[9].querySelector("input").value;
-                singleItem.sgst = row.querySelectorAll("td")[10].querySelector("input").value;
-                singleItem.totalGSTamount = row.querySelectorAll("td")[11].querySelector("input").value;
-                singleItem.totalWithGST = row.querySelectorAll("td")[12].querySelector("input").value;
+                singleItem.ExpDate = monthInput ? `${monthInput}-01` : "";
+                singleItem.MRP = row.querySelectorAll("td")[5].querySelector("input").value || 0;
+                singleItem.Rate = row.querySelectorAll("td")[6].querySelector("input").value || 0;
+                singleItem.Qty = row.querySelectorAll("td")[7].querySelector("input").value || 0;
+                singleItem.Dis = row.querySelectorAll("td")[8].querySelector("input").value || 0;
+
+                singleItem.Total = row.querySelectorAll("td")[9].querySelector("input").value;
+                singleItem.cgst = row.querySelectorAll("td")[10].querySelector("input").value || 0;
+                singleItem.sgst = row.querySelectorAll("td")[11].querySelector("input").value || 0;
+                singleItem.totalGSTamount = row.querySelectorAll("td")[12].querySelector("input").value;
+                singleItem.totalWithGST = row.querySelectorAll("td")[13].querySelector("input").value;
+                singleItem.Free = row.querySelectorAll("td")[14].querySelector("input").value || 0;
 
                 allItems.push(singleItem);
 
             })
-
+            
             let dataObj = {};
             dataObj.Supplier_name = document.getElementById("party").value;
             dataObj.party_id = document.getElementById("partyuniceID").value;

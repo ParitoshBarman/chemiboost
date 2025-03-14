@@ -778,6 +778,8 @@ def create_purchase(request):
                     sgst=item.get("sgst"),
                     totalGSTamount=item.get("totalGSTamount"),
                     totalWithGST=item.get("totalWithGST"),
+                    Dis=item.get("Dis"),
+                    Free=item.get("Free"),
                 )
 
                 # Update or create stock
@@ -788,7 +790,7 @@ def create_purchase(request):
                         "company": item["Company"],
                         "item_name": item["ItemName"],
                         "exp_date": datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None,
-                        "qty": item["Qty"],
+                        "qty": int(item["Qty"]) + int(item["Free"]),
                         "mrp": item["MRP"],
                         "rate": item["Rate"],
                         "cgst": item["cgst"],
@@ -801,7 +803,7 @@ def create_purchase(request):
 
                 if not created:
                     # If stock exists, update quantity and expiration date
-                    stock.qty = F("qty") + item["Qty"]
+                    stock.qty = int(F("qty")) + int(item["Qty"]) + int(item["Free"])
                     stock.mrp = item["MRP"]
                     stock.rate = item["Rate"]
                     stock.cgst = item["cgst"]
