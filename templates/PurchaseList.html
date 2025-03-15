@@ -53,7 +53,7 @@
             background-color: white;
             margin: 10% auto;
             padding: 20px;
-            width: 50%;
+            /* width: 50%; */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border-radius: 5px;
         }
@@ -149,12 +149,12 @@
 
         #edititemTable>tr :nth-child(6) input,
         #edititemTable>tr :nth-child(7) input,
-        #edititemTable>tr :nth-child(9) input {
+        #edititemTable>tr :nth-child(10) input {
             width: 60px;
             /* background-color: red; */
         }
 
-        #edititemTable>tr :nth-child(8) input {
+        #edititemTable>tr :nth-child(8) input, #edititemTable>tr :nth-child(9) input, #edititemTable>tr :nth-child(15) input {
             width: 40px;
         }
 
@@ -166,13 +166,13 @@
             width: 95px;
         }
 
-        #edititemTable>tr :nth-child(10) input,
-        #edititemTable>tr :nth-child(11) input {
+        #edititemTable>tr :nth-child(11) input,
+        #edititemTable>tr :nth-child(12) input {
             width: 50px;
         }
 
-        #edititemTable>tr :nth-child(12) input,
-        #edititemTable>tr :nth-child(13) input {
+        #edititemTable>tr :nth-child(13) input,
+        #edititemTable>tr :nth-child(14) input {
             width: 90px;
         }
 
@@ -190,10 +190,10 @@
         /* #edititemTable{
             overflow: scroll;
         } */
-        #editInvoiceModal>div {
+        /* #editInvoiceModal>div {
             overflow-x: scroll;
 
-        }
+        } */
 
         #editInvoiceModal>div::-webkit-scrollbar {
             width: 0;
@@ -312,11 +312,13 @@
                                     <th>MRP</th>
                                     <th>Rate</th>
                                     <th>Qty</th>
+                                    <th>Dis</th>
                                     <th>Total</th>
                                     <th>Cgst</th>
                                     <th>Sgst</th>
                                     <th>GST amount</th>
                                     <th>Total With GST</th>
+                                    <th>Free</th>
                                 </tr>
                             </thead>
                             <tbody id="itemTable">
@@ -369,11 +371,13 @@
                                     <th>MRP</th>
                                     <th>Rate</th>
                                     <th>Qty</th>
+                                    <th>Dis%</th>
                                     <th>Total</th>
                                     <th>Cgst</th>
                                     <th>Sgst</th>
                                     <th>GST amount</th>
                                     <th>Total With GST</th>
+                                    <th>Free</th>
                                 </tr>
                             </thead>
                             <tbody id="edititemTable">
@@ -485,11 +489,13 @@
                         <td>${item.mrp}</td>
                         <td>${item.rate}</td>
                         <td>${item.qty}</td>
+                        <td>${item.Dis}</td>
                         <td>${item.total}</td>
                         <td>${item.cgst}</td>
                         <td>${item.sgst}</td>
                         <td>${item.totalGSTamount}</td>
-                        <td>${item.totalWithGST}</td>`;
+                        <td>${item.totalWithGST}</td>
+                        <td>${item.Free}</td>`;
                         itemTable.appendChild(row);
                     });
 
@@ -607,11 +613,13 @@
                 <td><input type="number" value="${itm.mrp}" placeholder="MRP"></td>
                 <td><input type="number" value="${itm.rate}" placeholder="Rate" onkeyup="calculateTotal(this)"></td>
                 <td><input type="number" value="${itm.qty}" placeholder="Qty" onkeyup="calculateTotal(this)"></td>
+                <td><input type="number" value="${itm.Dis}" placeholder="Dis%" onkeyup="calculateTotal(this)"></td>
                 <td><input type="number" value="${itm.total}" placeholder="Total" readonly></td>
                 <td><input type="number" placeholder="Cgst" onkeyup="calculateTotal(this)" value="${itm.cgst}"></td>
                 <td><input type="number" placeholder="Sgst" onkeyup="calculateTotal(this)" value="${itm.sgst}"></td>
                 <td><input type="number" placeholder="Total GST Amount" value="${itm.totalGSTamount}" readonly></td>
                 <td><input type="number" placeholder="Total With GST" value="${itm.totalWithGST}" readonly></td>
+                <td><input type="number" placeholder="Free" value="${itm.Free}"></td>
             `;
 
                         table.appendChild(row);
@@ -649,11 +657,13 @@
             <td><input type="number" placeholder="MRP" value="0"></td>
             <td><input type="number" placeholder="Rate" onkeyup="calculateTotal(this)" value="0"></td>
             <td><input type="number" placeholder="Qty" onkeyup="calculateTotal(this)" value="0"></td>
+            <td><input type="number" placeholder="Dis%" onkeyup="calculateTotal(this)" value="0"></td>
             <td><input type="number" placeholder="Total" readonly value="0"></td>
             <td><input type="number" placeholder="Cgst" onkeyup="calculateTotal(this)" value="0"></td>
             <td><input type="number" placeholder="Sgst" onkeyup="calculateTotal(this)" value="0"></td>
             <td><input type="number" placeholder="Total GST Amount" readonly value="0"></td>
             <td><input type="number" placeholder="Total With GST" readonly value="0"></td>
+            <td><input type="number" placeholder="Free" value="0"></td>
         `;
 
             table.appendChild(row);
@@ -662,11 +672,15 @@
 
         function calculateTotal(input) {
             const row = input.parentElement.parentElement;
-            const rate = row.querySelector('td:nth-child(7) input').value;
-            const qty = row.querySelector('td:nth-child(8) input').value;
-            const totalCell = row.querySelector('td:nth-child(9) input');
+            const rate = row.querySelector('td:nth-child(7) input').value || 0;
+            const qty = row.querySelector('td:nth-child(8) input').value || 0;
+            const totalCell = row.querySelector('td:nth-child(10) input');
 
-            totalCell.value = (rate * qty).toFixed(2);
+            // for discount
+            const discount = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+            
+
+            totalCell.value = (rate * qty * (1 - discount / 100)).toFixed(2);
             calculateGrandTotal();
 
 
@@ -676,7 +690,7 @@
                 grandTotal = 0;
 
                 rows.forEach(row => {
-                    const total = parseFloat(row.querySelector('td:nth-child(9) input').value) || 0;
+                    const total = parseFloat(row.querySelector('td:nth-child(10) input').value) || 0;
                     grandTotal += total;
                 });
 
@@ -689,7 +703,7 @@
                 TotalwithGST = 0;
 
                 rows.forEach(row => {
-                    const total = parseFloat(row.querySelector('td:nth-child(13) input').value) || 0;
+                    const total = parseFloat(row.querySelector('td:nth-child(14) input').value) || 0;
                     TotalwithGST += total;
                 });
 
@@ -699,11 +713,11 @@
 
             function calculateGSTamount() {
                 const row = input.parentElement.parentElement;
-                const cgst = row.querySelector('td:nth-child(10) input').value;
-                const sgst = row.querySelector('td:nth-child(11) input').value;
-                const total = row.querySelector('td:nth-child(9) input').value;
-                const GSTamount = row.querySelector('td:nth-child(12) input');
-                const totalWithGST = row.querySelector('td:nth-child(13) input');
+                const cgst = row.querySelector('td:nth-child(11) input').value || 0;
+                const sgst = row.querySelector('td:nth-child(12) input').value || 0;
+                const total = row.querySelector('td:nth-child(10) input').value;
+                const GSTamount = row.querySelector('td:nth-child(13) input');
+                const totalWithGST = row.querySelector('td:nth-child(14) input');
 
                 totalGrossGSTPersentage = parseFloat(cgst) + parseFloat(sgst); // need correction
                 gstAmount = ((totalGrossGSTPersentage / 100).toFixed(2) * parseFloat(total)).toFixed(2)
@@ -717,7 +731,7 @@
                 TotalGSTamountOnly = 0;
 
                 rows.forEach(row => {
-                    const total = parseFloat(row.querySelector('td:nth-child(12) input').value) || 0;
+                    const total = parseFloat(row.querySelector('td:nth-child(13) input').value) || 0;
                     TotalGSTamountOnly += total;
                 });
 
@@ -739,11 +753,15 @@
                 singleItem.MRP = row.querySelectorAll("td")[5].querySelector("input").value;
                 singleItem.Rate = row.querySelectorAll("td")[6].querySelector("input").value;
                 singleItem.Qty = row.querySelectorAll("td")[7].querySelector("input").value;
-                singleItem.Total = row.querySelectorAll("td")[8].querySelector("input").value;
-                singleItem.cgst = row.querySelectorAll("td")[9].querySelector("input").value;
-                singleItem.sgst = row.querySelectorAll("td")[10].querySelector("input").value;
-                singleItem.totalGSTamount = row.querySelectorAll("td")[11].querySelector("input").value;
-                singleItem.totalWithGST = row.querySelectorAll("td")[12].querySelector("input").value;
+                singleItem.Dis = row.querySelectorAll("td")[8].querySelector("input").value;
+
+                singleItem.Total = row.querySelectorAll("td")[9].querySelector("input").value;
+                singleItem.cgst = row.querySelectorAll("td")[10].querySelector("input").value;
+                singleItem.sgst = row.querySelectorAll("td")[11].querySelector("input").value;
+                singleItem.totalGSTamount = row.querySelectorAll("td")[12].querySelector("input").value;
+                singleItem.totalWithGST = row.querySelectorAll("td")[13].querySelector("input").value;
+                singleItem.Free = row.querySelectorAll("td")[14].querySelector("input").value || 0;
+
 
                 allItems.push(singleItem);
 

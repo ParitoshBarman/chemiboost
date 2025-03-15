@@ -613,7 +613,7 @@ def get_purchases(request):
     if not user.is_authenticated:
         return JsonResponse({"error": "User is not authenticated"}, status=401)
     try:
-        purchases = Purchase.objects.filter(ref_user=user).order_by("-purchase_date")
+        purchases = Purchase.objects.filter(ref_user=user).order_by("-purchase_invoice_number")
 
         # 🔍 Filtering by date range
         start_date = request.GET.get("start_date")  # Format: YYYY-MM-DD
@@ -648,11 +648,13 @@ def get_purchases(request):
                     "MRP": item.mrp,
                     "Rate": item.rate,
                     "Qty": item.qty,
+                    "Dis": item.Dis,
                     "Total": item.total,
                     "cgst": item.cgst,
                     "sgst": item.sgst,
                     "totalGSTamount": item.totalGSTamount,
                     "totalWithGST": item.totalWithGST,
+                    "Free": item.Free,
                 }
                 for item in purchase_items
             ]
@@ -710,11 +712,13 @@ def get_purchase_items(request, purchase_id):
                     "mrp": str(item.mrp),
                     "rate": str(item.rate),
                     "qty": item.qty,
+                    "Dis": item.Dis,
                     "total": str(item.total),
                     "cgst": item.cgst,
                     "sgst": item.sgst,
                     "totalGSTamount": item.totalGSTamount,
                     "totalWithGST": item.totalWithGST,
+                    "Free": item.Free,
                 }
                 for item in items
             ],
@@ -803,7 +807,7 @@ def create_purchase(request):
 
                 if not created:
                     # If stock exists, update quantity and expiration date
-                    stock.qty = int(F("qty")) + int(item["Qty"]) + int(item["Free"])
+                    stock.qty = F("qty") + int(item["Qty"]) + int(item["Free"])
                     stock.mrp = item["MRP"]
                     stock.rate = item["Rate"]
                     stock.cgst = item["cgst"]
@@ -854,7 +858,7 @@ def edit_purchase(request, purchase_id):
                     ref_user=request.user, batch=item.batch,
                 ).first()
                 if stock_item:
-                    stock_item.qty -= item.qty  # Reduce stock by previous qty
+                    stock_item.qty = stock_item.qty - (item.qty + item.Free)  # Reduce stock by previous qty
                     stock_item.save()
 
             # Delete existing purchase items
@@ -870,11 +874,13 @@ def edit_purchase(request, purchase_id):
                     mrp=item.get("MRP"),
                     rate=item.get("Rate"),
                     qty=item.get("Qty"),
+                    Dis=item.get("Dis"),
                     total=item.get("Total"),
                     cgst=item.get("cgst"),
                     sgst=item.get("sgst"),
                     totalGSTamount=item.get("totalGSTamount"),
                     totalWithGST=item.get("totalWithGST"),
+                    Free=item.get("Free"),
                 )
                 
                 # Update or create stock
@@ -885,7 +891,8 @@ def edit_purchase(request, purchase_id):
                         "company": item["Company"],
                         "item_name": item["ItemName"],
                         "exp_date": datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None,
-                        "qty": item["Qty"],
+                        "qty": int(int(item["Qty"]) + int(item["Free"])),
+                        "Dis": item["Dis"],
                         "mrp": item["MRP"],
                         "rate": item["Rate"],
                         "cgst": item["cgst"],
@@ -893,12 +900,17 @@ def edit_purchase(request, purchase_id):
                         "total": item["Total"],
                         "totalGSTamount": item["totalGSTamount"],
                         "totalWithGST": item["totalWithGST"],
+                        "Free": item["Free"],
                     }
                 )
 
                 if not created:
                     # If stock exists, update quantity and expiration date
-                    stock.qty = F("qty") + item["Qty"]
+                    stock.qty = F("qty") + int(int(item["Qty"]) + int(item["Free"]))
+                    stock.mrp = item["MRP"]
+                    stock.rate = item["Rate"]
+                    stock.cgst = item["cgst"]
+                    stock.sgst = item["sgst"]
                     stock.exp_date = datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None
                     stock.save()
 
