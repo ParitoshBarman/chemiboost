@@ -1199,7 +1199,7 @@ def get_medicine_stock(request):
     if request.method == "GET":
         try:
             stock_items = MedicineStock.objects.filter(ref_user=request.user.username).values(
-                "item_name", "batch", "mrp", "qty"
+                "item_name", "batch", "mrp", "qty", "UnitPack"
             )
             return JsonResponse(list(stock_items), safe=False, status=200)
 

@@ -445,7 +445,7 @@
                 // else if(med.qty<100){
                 //     return `<div style="background-color: yellow;color:black;" onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}</div>`
                 // }
-                return `<div onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}</div>`
+                return `<div onclick="selectMedicine('${med.batch}', '${suggestionBoxId}', '${med.item_name}', '${med.batch}', '${med.mrp}')">${med.item_name}, Batch: ${med.batch}, MRP: ${med.mrp}, Qty: ${med.qty}, Unit: ${med.UnitPack}</div>`
             }).join("");
         }
 
