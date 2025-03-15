@@ -146,6 +146,7 @@ def stock(request):
     stock_data = [
         {
             "name": item.item_name,
+            "UnitPack":item.UnitPack,
             "quantity": item.qty
         }
         for item in stock_items
@@ -655,6 +656,7 @@ def get_purchases(request):
                     "totalGSTamount": item.totalGSTamount,
                     "totalWithGST": item.totalWithGST,
                     "Free": item.Free,
+                    "UnitPack": item.UnitPack,
                 }
                 for item in purchase_items
             ]
@@ -719,6 +721,7 @@ def get_purchase_items(request, purchase_id):
                     "totalGSTamount": item.totalGSTamount,
                     "totalWithGST": item.totalWithGST,
                     "Free": item.Free,
+                    "UnitPack": item.UnitPack,
                 }
                 for item in items
             ],
@@ -770,6 +773,7 @@ def create_purchase(request):
             for item in purchase_items:
                 PurchaseItem.objects.create(
                     purchase=purchase,
+                    ref_user=user.username,
                     company=item.get("Company"),
                     item_name=item.get("ItemName"),
                     batch=item.get("Batch"),
@@ -784,6 +788,7 @@ def create_purchase(request):
                     totalWithGST=item.get("totalWithGST"),
                     Dis=item.get("Dis"),
                     Free=item.get("Free"),
+                    UnitPack=item.get("UnitPack"),
                 )
 
                 # Update or create stock
@@ -802,6 +807,7 @@ def create_purchase(request):
                         "total": item["Total"],
                         "totalGSTamount": item["totalGSTamount"],
                         "totalWithGST": item["totalWithGST"],
+                        "UnitPack": item["UnitPack"],
                     }
                 )
 
@@ -812,6 +818,7 @@ def create_purchase(request):
                     stock.rate = item["Rate"]
                     stock.cgst = item["cgst"]
                     stock.sgst = item["sgst"]
+                    stock.UnitPack = item["UnitPack"]
                     stock.exp_date = datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None
                     stock.save()
 
@@ -867,6 +874,7 @@ def edit_purchase(request, purchase_id):
             for item in items:
                 PurchaseItem.objects.create(
                     purchase=purchase,
+                    ref_user=request.user.username,
                     company=item.get("Company"),
                     item_name=item.get("ItemName"),
                     batch=item.get("Batch"),
@@ -881,6 +889,7 @@ def edit_purchase(request, purchase_id):
                     totalGSTamount=item.get("totalGSTamount"),
                     totalWithGST=item.get("totalWithGST"),
                     Free=item.get("Free"),
+                    UnitPack=item.get("UnitPack"),
                 )
                 
                 # Update or create stock
@@ -892,7 +901,6 @@ def edit_purchase(request, purchase_id):
                         "item_name": item["ItemName"],
                         "exp_date": datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None,
                         "qty": int(int(item["Qty"]) + int(item["Free"])),
-                        "Dis": item["Dis"],
                         "mrp": item["MRP"],
                         "rate": item["Rate"],
                         "cgst": item["cgst"],
@@ -900,7 +908,7 @@ def edit_purchase(request, purchase_id):
                         "total": item["Total"],
                         "totalGSTamount": item["totalGSTamount"],
                         "totalWithGST": item["totalWithGST"],
-                        "Free": item["Free"],
+                        "UnitPack": item["UnitPack"],
                     }
                 )
 
@@ -911,6 +919,7 @@ def edit_purchase(request, purchase_id):
                     stock.rate = item["Rate"]
                     stock.cgst = item["cgst"]
                     stock.sgst = item["sgst"]
+                    stock.UnitPack = item["UnitPack"]
                     stock.exp_date = datetime.strptime(item.get("ExpDate"), "%Y-%m-%d").date() if item.get("ExpDate") else None
                     stock.save()
 

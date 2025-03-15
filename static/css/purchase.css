@@ -71,7 +71,7 @@ td {
 th {
     background-color: var(--theamcolor);
 }
-#itemTable>tr :nth-child(6) input, #itemTable>tr :nth-child(7) input, #itemTable>tr :nth-child(8) input, #itemTable>tr :nth-child(9) input, #itemTable>tr :nth-child(11) input, #itemTable>tr :nth-child(12) input, #itemTable>tr :nth-child(15) input{
+#itemTable>tr :nth-child(6) input, #itemTable>tr :nth-child(7) input, #itemTable>tr :nth-child(8) input, #itemTable>tr :nth-child(9) input, #itemTable>tr :nth-child(11) input, #itemTable>tr :nth-child(12) input, #itemTable>tr :nth-child(15) input, #itemTable>tr :nth-child(16) input{
     width: 60px;
     /* background-color: red; */
 }

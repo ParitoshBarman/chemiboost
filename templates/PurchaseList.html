@@ -149,7 +149,7 @@
 
         #edititemTable>tr :nth-child(6) input,
         #edititemTable>tr :nth-child(7) input,
-        #edititemTable>tr :nth-child(10) input {
+        #edititemTable>tr :nth-child(10) input, #edititemTable>tr :nth-child(16) input {
             width: 60px;
             /* background-color: red; */
         }
@@ -319,6 +319,7 @@
                                     <th>GST amount</th>
                                     <th>Total With GST</th>
                                     <th>Free</th>
+                                    <th>Unit/Pack</th>
                                 </tr>
                             </thead>
                             <tbody id="itemTable">
@@ -378,6 +379,7 @@
                                     <th>GST amount</th>
                                     <th>Total With GST</th>
                                     <th>Free</th>
+                                    <th>Unit/Pack</th>
                                 </tr>
                             </thead>
                             <tbody id="edititemTable">
@@ -454,9 +456,9 @@
                     </td>
                     <td>
                         <button class="edit-btn tbl-btn" onclick="editInvoice(${purchase.id})">✏ Edit</button>
-                        <button class="delete-btn tbl-btn" onclick="deletePurchase(${purchase.id})">🗑 Delete</button>
                     </td>
-                `;
+                        `;
+                        // <button class="delete-btn tbl-btn" onclick="deletePurchase(${purchase.id})">🗑 Delete</button>
                 tableBody.appendChild(row);
             });
         }
@@ -495,12 +497,14 @@
                         <td>${item.sgst}</td>
                         <td>${item.totalGSTamount}</td>
                         <td>${item.totalWithGST}</td>
-                        <td>${item.Free}</td>`;
+                        <td>${item.Free}</td>
+                        <td>${item.UnitPack}</td>`;
                         itemTable.appendChild(row);
                     });
 
                     let rowLast = document.createElement("tr");
                     rowLast.innerHTML = `<td style="border: none;"></td>
+    <td style="border: none;"></td>
     <td style="border: none;"></td>
     <td style="border: none;"></td>
     <td style="border: none;"></td>
@@ -620,6 +624,7 @@
                 <td><input type="number" placeholder="Total GST Amount" value="${itm.totalGSTamount}" readonly></td>
                 <td><input type="number" placeholder="Total With GST" value="${itm.totalWithGST}" readonly></td>
                 <td><input type="number" placeholder="Free" value="${itm.Free}"></td>
+                <td><input type="text" placeholder="Unit/Pack" value="${itm.UnitPack}"></td>
             `;
 
                         table.appendChild(row);
@@ -664,6 +669,7 @@
             <td><input type="number" placeholder="Total GST Amount" readonly value="0"></td>
             <td><input type="number" placeholder="Total With GST" readonly value="0"></td>
             <td><input type="number" placeholder="Free" value="0"></td>
+            <td><input type="text" placeholder="Unit/Pack"></td>
         `;
 
             table.appendChild(row);
@@ -761,6 +767,7 @@
                 singleItem.totalGSTamount = row.querySelectorAll("td")[12].querySelector("input").value;
                 singleItem.totalWithGST = row.querySelectorAll("td")[13].querySelector("input").value;
                 singleItem.Free = row.querySelectorAll("td")[14].querySelector("input").value || 0;
+                singleItem.UnitPack = row.querySelectorAll("td")[15].querySelector("input").value;
 
 
                 allItems.push(singleItem);

@@ -169,6 +169,7 @@
                             <th>GST amount</th>
                             <th>Total With GST</th>
                             <th>Free</th>
+                            <th>Unit/Pack</th>
                         </tr>
                     </thead>
                     <tbody id="itemTable">
@@ -259,6 +260,7 @@
                 <td><input type="number" placeholder="Total GST Amount" readonly value="0"></td>
                 <td><input type="number" placeholder="Total With GST" readonly value="0"></td>
                 <td><input type="number" placeholder="Free" value="0"></td>
+                <td><input type="text" placeholder="Unit/Pack"></td>
             `;
 
             table.appendChild(row);
@@ -362,6 +364,7 @@
                 singleItem.totalGSTamount = row.querySelectorAll("td")[12].querySelector("input").value;
                 singleItem.totalWithGST = row.querySelectorAll("td")[13].querySelector("input").value;
                 singleItem.Free = row.querySelectorAll("td")[14].querySelector("input").value || 0;
+                singleItem.UnitPack = row.querySelectorAll("td")[15].querySelector("input").value;
 
                 allItems.push(singleItem);
 

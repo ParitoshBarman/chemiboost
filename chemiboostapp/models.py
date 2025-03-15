@@ -97,6 +97,7 @@ class PurchaseItem(models.Model):
     totalGSTamount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST amount")
     totalWithGST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total with GST")
     Free = models.IntegerField(verbose_name="Free Medicine")
+    UnitPack = models.CharField(max_length=16, verbose_name="UnitPack")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
 
 class MedicineStock(models.Model):
@@ -114,6 +115,7 @@ class MedicineStock(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total")
     totalGSTamount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total GST amount")
     totalWithGST = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total with GST")
+    UnitPack = models.CharField(max_length=16, verbose_name="UnitPack")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     def per_pice_price(self):
         return self.totalWithGST/self.qty

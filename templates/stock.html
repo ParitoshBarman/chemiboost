@@ -122,6 +122,7 @@
                     <thead>
                         <tr>
                             <th>Medicine Name</th>
+                            <th>Unit/Pack</th>
                             <th>Quantity</th>
                             <th>Status</th>
                         </tr>
@@ -162,6 +163,10 @@
                 const nameCell = document.createElement('td');
                 nameCell.textContent = product.name;
                 row.appendChild(nameCell);
+
+                const UnitPackCell = document.createElement('td');
+                UnitPackCell.textContent = product.UnitPack;
+                row.appendChild(UnitPackCell);
 
                 const quantityCell = document.createElement('td');
                 quantityCell.textContent = product.quantity;
