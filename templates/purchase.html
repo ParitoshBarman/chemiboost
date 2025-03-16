@@ -85,7 +85,7 @@
 
         .partysection .form-container input,
         .partysection .form-container textarea {
-            width: 100%;
+            width: 97%;
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ddd;
@@ -204,11 +204,15 @@
                 <label for="partyName">Party Name</label>
                 <input type="text" id="partyName" placeholder="Enter Party Name">
                 <label for="partyContact">Contact Number</label>
-                <input type="text" id="partyContact" placeholder="Enter Contact Number">
+                <input type="text" id="partyContact" placeholder="Enter Contact Number" maxlength="10">
+                <label for="partyContact2">Contact Number 2</label>
+                <input type="text" id="partyContact2" placeholder="Enter Contact Number 2" maxlength="10">
                 <label for="partyEmail">Email Address</label>
                 <input type="email" id="partyEmail" placeholder="Enter Email Address">
                 <label for="gst_number">GST Number</label>
                 <input type="text" id="gst_number" placeholder="Enter GST Number">
+                <label for="DL_number">DL Number</label>
+                <input type="text" id="DL_number" placeholder="Enter DL Number">
                 <label for="partyAddress">Address</label>
                 <input type="text" id="partyAddress" placeholder="Enter Address">
                 <div>
@@ -441,8 +445,10 @@
         async function saveParty() {
             const name = document.getElementById("partyName").value;
             const contact_number = document.getElementById("partyContact").value;
+            const contact_number2 = document.getElementById("partyContact2").value;
             const email = document.getElementById("partyEmail").value;
             const gst_number = document.getElementById("gst_number").value;
+            const DL_number = document.getElementById("DL_number").value;
             const address = document.getElementById("partyAddress").value;
             if (editIndex === -1) {
                 try {
@@ -451,13 +457,13 @@
                         headers: {
                             "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({ name, contact_number, email, gst_number, address })
+                        body: JSON.stringify({ name, contact_number, contact_number2, email, gst_number, DL_number, address })
                     });
 
                     const result = await response.json();
 
                     if (response.ok) {
-                        parties.push({ fields: { name, contact_number, email, gst_number, address }, pk: result.party_id });
+                        parties.push({ fields: { name, contact_number, contact_number2, email, gst_number, DL_number, address }, pk: result.party_id });
                         alert(result.message);
                     } else {
                         console.error('Error adding party:', result);
@@ -476,7 +482,7 @@
                         headers: {
                             "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({ name, contact_number, email, gst_number, address })
+                        body: JSON.stringify({ name, contact_number, contact_number2, email, gst_number, DL_number, address })
 
                     });
 
@@ -485,7 +491,7 @@
 
                     // Check the status of the response
                     if (response.ok) {
-                        parties[editIndex] = { fields: { name, contact_number, email, gst_number, address }, pk: data.party_id };
+                        parties[editIndex] = { fields: { name, contact_number, contact_number2, email, gst_number, DL_number, address }, pk: data.party_id };
 
                         editIndex = -1;
                         partyIdforEdit = 0;
@@ -551,8 +557,10 @@
             const party = parties[index];
             document.getElementById("partyName").value = party.fields.name;
             document.getElementById("partyContact").value = party.fields.contact_number;
+            document.getElementById("partyContact2").value = party.fields.contact_number2;
             document.getElementById("partyEmail").value = party.fields.email;
             document.getElementById("gst_number").value = party.fields.gst_number;
+            document.getElementById("DL_number").value = party.fields.DL_number;
             document.getElementById("partyAddress").value = party.fields.address;
 
             document.getElementById("formTitle").textContent = "Edit Party";

@@ -956,8 +956,10 @@ def add_party(request):
             # Extract fields
             name = data.get('name')
             contact_number = data.get('contact_number')
+            contact_number2 = data.get('contact_number2', "")
             email = data.get('email', None)
             gst_number = data.get('gst_number', None)
+            DL_number = data.get('DL_number', None)
             address = data.get('address', None)
             ref_user = request.user.username
 
@@ -973,7 +975,9 @@ def add_party(request):
                 email=email,
                 gst_number=gst_number,
                 address=address,
-                ref_user=ref_user
+                ref_user=ref_user,
+                contact_number2=contact_number2,
+                DL_number=DL_number,
             )
 
             # Success response
@@ -1002,8 +1006,10 @@ def edit_party(request, party_id):
             # Update fields if present
             party.name = data.get('name', party.name)
             party.contact_number = data.get('contact_number', party.contact_number)
+            party.contact_number2 = data.get('contact_number2', party.contact_number2)
             party.email = data.get('email', party.email)
             party.gst_number = data.get('gst_number', party.gst_number)
+            party.DL_number = data.get('DL_number', party.DL_number)
             party.address = data.get('address', party.address)
             party.save()
 
