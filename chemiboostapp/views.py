@@ -319,7 +319,9 @@ def create_bill(request):
             total_amount = data.get("total_amount")
             total_GST = data.get("total_GST")
             total_with_GST = data.get("total_with_GST")
+            AppliedOffer = data.get("AppliedOffer")
             billing_items = data.get("billing_items", [])
+            Offer = data.get("Offer")
 
              # Ensure required fields are present
             if not customer_contact or not customer_name:
@@ -353,6 +355,12 @@ def create_bill(request):
                 phone_number=customer_contact,
                 defaults={"name": customer_name}
             )
+            if AppliedOffer!="":
+                customer.Offer = ""
+                customer.save()
+            if customer and Offer:
+                customer.Offer = Offer
+                customer.save()
 
 
             # Create a new billing record
@@ -363,7 +371,8 @@ def create_bill(request):
                 customer_contact=customer_contact,
                 total_amount=total_amount,
                 total_GST=total_GST,
-                total_with_GST=total_with_GST
+                total_with_GST=total_with_GST,
+                Offer=AppliedOffer
             )
 
             # Save all billing items
@@ -1222,11 +1231,11 @@ def get_customers(request):
     if request.method == "GET":
         try:
             customers = Customer.objects.filter(ref_user=request.user.username).values(
-                "customer_id", "name", "phone_number"
+                "customer_id", "name", "phone_number", "Offer"
             )
 
             customer_list = [
-                {"customerId": c["customer_id"], "name": c["name"], "phone": c["phone_number"]}
+                {"customerId": c["customer_id"], "name": c["name"], "phone": c["phone_number"], "Offer": c["Offer"]}
                 for c in customers
             ]
 

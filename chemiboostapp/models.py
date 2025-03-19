@@ -48,8 +48,8 @@ class Party(models.Model):
     contact_number = models.CharField(max_length=15, verbose_name="Contact Number")
     contact_number2 = models.CharField(max_length=15, default="", blank=True, null=True, verbose_name="Contact Number")
     email = models.EmailField(blank=True, null=True, verbose_name="Email Address")
-    gst_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="GST Number")
-    DL_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="GST Number")
+    gst_number = models.CharField(max_length=30, blank=True, null=True, verbose_name="GST Number")
+    DL_number = models.CharField(max_length=100, blank=True, null=True, verbose_name="GST Number")
     address = models.TextField(blank=True, null=True, verbose_name="Address")
     totalExpence = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
@@ -131,6 +131,7 @@ class Customer(models.Model):
     phone_number = models.CharField(max_length=15, unique=True, verbose_name="Phone Number")
     email = models.EmailField(unique=True, blank=True, null=True, verbose_name="Email Address")
     address = models.TextField(blank=True, null=True, verbose_name="Address")
+    Offer = models.CharField(max_length=15, verbose_name="Next Offer")
     # gst_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="GST Number")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
@@ -177,6 +178,7 @@ class Billing(models.Model):
     last_update_date = models.DateField(auto_now=True, verbose_name="Last Update Date")
     last_update_time = models.TimeField(auto_now=True, verbose_name="Last Update Time")
     total_profit = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Total Profit")
+    Offer = models.CharField(max_length=15, verbose_name="Offer Applied")
 
 
 class BillingItem(models.Model):

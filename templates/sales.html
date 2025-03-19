@@ -97,6 +97,10 @@
                     <h1>Sales Invoice</h1>
                     <p><strong>Date:</strong> <input type="date" id="dateInput"></p>
                 </div>
+                <div class="form-group input-group" style="float: right;">
+                    <div id="OldOffer"></div>
+
+                </div>
 
                 <!-- Form for Sales Details -->
                 <div id="medicinelistdataform">
@@ -111,8 +115,12 @@
                         <div class="form-group input-group">
                             <label for="phoneno">Mobile No:</label>
                             <input type="text" id="phoneno" name="phoneno" placeholder="Enter Mobile Number"
-                                onkeyup="searchCustomer(this)">
+                                onkeyup="searchCustomer(this)" maxlength="10">
                             <div id="phoneSuggestions" class="suggestions"></div>
+                        </div>
+                        <div class="form-group input-group">
+                            <label for="Offer">Give New Offer</label>
+                            <input type="text" id="Offer" name="Offer" placeholder="Enter Offer Ex(20% or 50)">
                         </div>
                     </div>
 
@@ -153,6 +161,9 @@
                 </div>
                 <div class="summary">
                     <p><strong>GST Total: ₹</strong><span id="TotalGSTamountOnly">0.00</span></p>
+                </div>
+                <div class="summary">
+                    <p><strong>Offer: ₹</strong><span id="offersummary">0.00</span></p>
                 </div>
                 <div class="summary">
                     <p><strong>Grand Total with GST: ₹</strong><span id="grandTotalWithGST">0.00</span></p>
@@ -226,6 +237,19 @@
                     TotalwithGST += total;
                 });
 
+                let offervalue = document.getElementById("offervalue");
+                if (offervalue) {
+                    if (offervalue.getAttribute("data-isapplied") == "true") {
+                        if (offervalue.textContent.includes("%")) {
+                            let onlyOfferValue = parseInt(offervalue.textContent)
+                            TotalwithGST = TotalwithGST - TotalwithGST * onlyOfferValue / 100;
+                        }
+                        else {
+                            let onlyOfferValue = parseInt(offervalue.textContent)
+                            TotalwithGST = TotalwithGST - onlyOfferValue;
+                        }
+                    }
+                }
                 document.getElementById('grandTotalWithGST').innerText = TotalwithGST.toFixed(2);
                 calculateTotalGSTamountOnly();
             }
@@ -281,6 +305,7 @@
         fetchCustomers();
 
         function searchCustomer(e) {
+            document.getElementById("OldOffer").innerHTML = null;
             let query = e.value;
 
             if (e.name == "customer") {
@@ -324,6 +349,12 @@
                 if (itm.customerId == customerId) {
                     document.getElementById("customer").value = itm.name;
                     document.getElementById("phoneno").value = itm.phone;
+                    if (itm.Offer != "") {
+                        document.getElementById("OldOffer").innerHTML = `Offer: <span id="offervalue" data-isapplied="false">${itm.Offer}</span> <button onclick="applyOffer(this)" style="border-radius: 5px;padding: 5px;cursor: pointer;">Apply Offer</button>`;
+
+                    } else {
+                        document.getElementById("OldOffer").innerHTML = "Offer: No offers available";
+                    }
                     document.getElementById("customerSuggestions").innerHTML = "";
                     document.getElementById("phoneSuggestions").innerHTML = "";
                     return
@@ -333,7 +364,7 @@
 
         }
 
-        async function createBill(){
+        async function createBill() {
 
             let allItems = [];
 
@@ -359,12 +390,23 @@
             let dataObj = {};
             dataObj.customer_name = document.getElementById("customer").value;
             dataObj.customer_contact = document.getElementById("phoneno").value;
+            dataObj.Offer = document.getElementById("Offer").value;
             dataObj.billing_date = document.getElementById("dateInput").value;
 
             dataObj.total_amount = document.getElementById("grandTotal").textContent;
             dataObj.total_GST = document.getElementById("TotalGSTamountOnly").textContent;
             dataObj.total_with_GST = document.getElementById("grandTotalWithGST").textContent;
             dataObj.billing_items = allItems
+            let offervalue = document.getElementById("offervalue");
+            if (offervalue) {
+                if (offervalue.getAttribute("data-isapplied") == "true") {
+                    dataObj.AppliedOffer = offervalue.textContent;
+                } else {
+                    dataObj.AppliedOffer = "";
+                }
+            } else {
+                dataObj.AppliedOffer = "";
+            }
 
             try {
                 const response = await fetch(`/create-bill`, {
@@ -382,13 +424,17 @@
                     table.innerHTML = null;
                     document.getElementById("customer").value = "";
                     document.getElementById("phoneno").value = "";
+                    document.getElementById("Offer").value = "";
+                    document.getElementById("OldOffer").innerHTML = null;
                     alert(result.message);
-                    
+                    fetchCustomers();
+                    fetchMedicineStock();
+
                     // Download PDF file Usage
-                    try{
-                        window.pyBridge.downloadAndPrint(`download-bill-pdf/${result.invoice_number}`, result.invoice_number, dataObj.customer_name, dataObj.customer_contact, dataObj.total_amount, dataObj.total_GST, dataObj.total_with_GST, JSON.stringify(dataObj.billing_items))
+                    try {
+                        window.pyBridge.downloadAndPrint(`download-bill-pdf/${result.invoice_number}`, result.invoice_number, dataObj.customer_name, dataObj.customer_contact, dataObj.total_amount, dataObj.total_GST, dataObj.total_with_GST, JSON.stringify(dataObj.billing_items), dataObj.AppliedOffer, dataObj.Offer)
                         // alert("Downloaded By Official Software");
-                    }catch{
+                    } catch {
                         downloadFile(`download-bill-pdf/${result.invoice_number}`, `${dataObj.customer_name}_${result.invoice_number}_invoice.pdf`);
                         // alert("Downloaded By Web");
 
@@ -456,7 +502,24 @@
             document.getElementById(`price_${rowNum}`).value = mrp;
         }
 
-        
+
+        function applyOffer(e) {
+            let offervalue = document.getElementById("offervalue");
+            if (e.textContent != "Applied") {
+                offervalue.setAttribute("data-isapplied", "true")
+                // updateTotal();
+                e.textContent = "Applied"
+                e.style.backgroundColor = "black";
+                e.style.color = "white";
+                document.getElementById("offersummary").textContent = offervalue.textContent;
+            } else {
+                offervalue.setAttribute("data-isapplied", "false")
+                e.textContent = "Apply Offer"
+                e.style.backgroundColor = "white";
+                e.style.color = "black";
+                document.getElementById("offersummary").textContent ="0.00"
+            }
+        }
     </script>
 </body>
 
