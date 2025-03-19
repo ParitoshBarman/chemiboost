@@ -426,6 +426,10 @@
                     document.getElementById("phoneno").value = "";
                     document.getElementById("Offer").value = "";
                     document.getElementById("OldOffer").innerHTML = null;
+                    document.getElementById("grandTotal").textContent = "00.00";
+                    document.getElementById("TotalGSTamountOnly").textContent = "00.00";
+                    document.getElementById("offersummary").textContent = "0";
+                    document.getElementById("grandTotalWithGST").textContent = "00.00";
                     alert(result.message);
                     fetchCustomers();
                     fetchMedicineStock();
